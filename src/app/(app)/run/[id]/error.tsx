@@ -19,7 +19,7 @@ export default function RunDetailError({
       <div className="rounded-card bg-kith-surface p-8 w-full max-w-sm space-y-5">
         <div className="space-y-2">
           <h1 className="font-display font-extrabold text-xl text-kith-text">
-            This run couldn't be loaded
+            This run couldn&apos;t be loaded
           </h1>
           <p className="font-body text-sm text-kith-muted leading-relaxed">
             Something went wrong loading this run. Try again or head back to

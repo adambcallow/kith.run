@@ -14,9 +14,6 @@ interface JoinButtonProps {
 }
 
 export function JoinButton({ runId, userId, isJoined: initialJoined, creatorId }: JoinButtonProps) {
-  // Don't render the join button for the run creator
-  if (creatorId && userId === creatorId) return null;
-
   const [joined, setJoined] = useState(initialJoined);
   const [isPending, startTransition] = useTransition();
   const [animating, setAnimating] = useState(false);
@@ -24,6 +21,9 @@ export function JoinButton({ runId, userId, isJoined: initialJoined, creatorId }
   const router = useRouter();
   const supabase = createClient();
   const btnRef = useRef<HTMLButtonElement>(null);
+
+  // Don't render the join button for the run creator
+  if (creatorId && userId === creatorId) return null;
 
   const triggerSpring = useCallback(() => {
     setAnimating(true);
