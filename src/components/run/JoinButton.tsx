@@ -22,12 +22,8 @@ export function JoinButton({ runId, userId, isJoined: initialJoined, creatorId }
   const supabase = createClient();
   const btnRef = useRef<HTMLButtonElement>(null);
 
-  // Don't render the join button for the run creator
-  if (creatorId && userId === creatorId) return null;
-
   const triggerSpring = useCallback(() => {
     setAnimating(true);
-    // Remove animation class after it completes so it can re-trigger
     setTimeout(() => setAnimating(false), 400);
   }, []);
 
@@ -35,6 +31,9 @@ export function JoinButton({ runId, userId, isJoined: initialJoined, creatorId }
     setShowCelebration(true);
     setTimeout(() => setShowCelebration(false), 700);
   }, []);
+
+  // Don't render the join button for the run creator
+  if (creatorId && userId === creatorId) return null;
 
   async function handleToggle(e: React.MouseEvent) {
     e.preventDefault();
