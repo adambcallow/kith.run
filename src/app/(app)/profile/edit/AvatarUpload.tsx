@@ -104,13 +104,13 @@ export function AvatarUpload({
         const compressed = await compressImage(file);
 
         const supabase = createClient();
-        const timestamp = Date.now();
-        const filePath = `${userId}/${timestamp}.jpg`;
+        // Single stable path per user — upsert replaces the old file automatically
+        const filePath = `${userId}/avatar.jpg`;
 
         const { error: uploadError } = await supabase.storage
           .from("avatars")
           .upload(filePath, compressed, {
-            cacheControl: "3600",
+            cacheControl: "31536000", // 1 year — cache-bust via query param
             upsert: true,
             contentType: "image/jpeg",
           });
@@ -121,8 +121,10 @@ export function AvatarUpload({
           data: { publicUrl },
         } = supabase.storage.from("avatars").getPublicUrl(filePath);
 
-        setPreviewUrl(publicUrl);
-        onUpload(publicUrl);
+        // Append timestamp to bust browser/CDN cache after re-upload
+        const cacheBustedUrl = `${publicUrl}?v=${Date.now()}`;
+        setPreviewUrl(cacheBustedUrl);
+        onUpload(cacheBustedUrl);
       } catch (err) {
         setError("Upload failed. Please try again.");
         setPreviewUrl(null);
