@@ -34,8 +34,8 @@ export default async function FeedPage() {
   const allRuns = runs ?? [];
   const runIds = allRuns.map((r) => r.id);
 
-  // Bulk-fetch participants and reactions for all run IDs — no N+1
-  const [participantsResult, reactionsResult, todayActivityResult] =
+  // Bulk-fetch participants, reactions, activity, and greeting name — all in parallel
+  const [participantsResult, reactionsResult, todayActivityResult, profileResult] =
     await Promise.all([
       runIds.length > 0
         ? supabase
@@ -49,11 +49,15 @@ export default async function FeedPage() {
             .select("*")
             .in("run_id", runIds)
         : Promise.resolve({ data: [] as import("@/types/database").Reaction[] }),
-      // Activity summary: how many people joined runs today
       supabase
         .from("run_participants")
         .select("*", { count: "exact", head: true })
         .gte("joined_at", new Date(new Date().setHours(0, 0, 0, 0)).toISOString()),
+      supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("id", user!.id)
+        .single(),
     ]);
 
   const allParticipants = participantsResult.data ?? [];
@@ -117,13 +121,7 @@ export default async function FeedPage() {
   // Find the first live run for the prominent banner
   const liveRun = liveRuns[0] ?? null;
 
-  const profile = await supabase
-    .from("profiles")
-    .select("full_name")
-    .eq("id", user!.id)
-    .single();
-
-  const firstName = profile.data?.full_name?.split(" ")[0] ?? null;
+  const firstName = profileResult.data?.full_name?.split(" ")[0] ?? null;
   const greeting = getGreeting();
 
   return (

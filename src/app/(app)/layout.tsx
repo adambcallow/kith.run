@@ -18,17 +18,19 @@ export default async function AppLayout({
     redirect("/login");
   }
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("username, avatar_url, full_name")
-    .eq("id", user.id)
-    .single();
-
-  const { count: unreadCount } = await supabase
-    .from("notifications")
-    .select("*", { count: "exact", head: true })
-    .eq("user_id", user.id)
-    .eq("read", false);
+  // Parallelize profile + notification count — no waterfall
+  const [{ data: profile }, { count: unreadCount }] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("username, avatar_url, full_name")
+      .eq("id", user.id)
+      .single(),
+    supabase
+      .from("notifications")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .eq("read", false),
+  ]);
 
   return (
     <div className="min-h-screen bg-white pb-[calc(5rem+env(safe-area-inset-bottom))]">

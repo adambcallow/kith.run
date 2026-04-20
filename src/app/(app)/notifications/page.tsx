@@ -64,11 +64,13 @@ export default async function NotificationsPage() {
     .order("created_at", { ascending: false })
     .limit(50);
 
-  await supabase
+  // Mark as read — fire and forget, don't block page render
+  supabase
     .from("notifications")
     .update({ read: true })
     .eq("user_id", user.id)
-    .eq("read", false);
+    .eq("read", false)
+    .then(() => {});
 
   const grouped = groupNotifications(notifications ?? []);
 
