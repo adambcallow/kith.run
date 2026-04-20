@@ -1,23 +1,47 @@
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&family=DM+Sans:wght@400;500&display=swap");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --kith-orange: #f95e2e;
+  --kith-black: #1b1c1f;
+  --kith-gray-light: #bfccd9;
+  --kith-white: #ffffff;
+  --kith-surface: #f6f7f8;
+  --kith-text: #2d2d2d;
+  --kith-muted: #8a8f99;
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  color: var(--kith-text);
+  background: var(--kith-white);
+  font-family: "DM Sans", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-kith-orange text-white font-body font-medium rounded-pill px-6 py-3 transition-transform active:scale-95;
+  }
+
+  .btn-secondary {
+    @apply bg-transparent border-[1.5px] border-kith-black text-kith-black font-body font-medium rounded-pill px-6 py-3 transition-transform active:scale-95;
+  }
+
+  .btn-ghost {
+    @apply bg-transparent text-kith-orange font-body font-medium px-4 py-2;
+  }
+
+  .run-card {
+    @apply bg-white border border-kith-gray-light rounded-card shadow-sm;
+  }
+
+  .app-container {
+    @apply max-w-[480px] mx-auto px-4;
+  }
 }
 
 @layer utilities {
