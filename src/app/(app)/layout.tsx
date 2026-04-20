@@ -31,7 +31,7 @@ export default async function AppLayout({
     .eq("read", false);
 
   return (
-    <div className="min-h-screen bg-white pb-16">
+    <div className="min-h-screen bg-white pb-[calc(5rem+env(safe-area-inset-bottom))]">
       <TopBar
         username={profile?.username}
         avatarUrl={profile?.avatar_url}
@@ -40,6 +40,7 @@ export default async function AppLayout({
       />
       <main className="app-container py-4">{children}</main>
       <BottomNav
+        unreadCount={unreadCount ?? 0}
         username={profile?.username}
         avatarUrl={profile?.avatar_url}
         fullName={profile?.full_name}

@@ -6,13 +6,13 @@ export function formatPace(seconds: number): string {
 
 export function formatPaceRange(min: number | null, max: number | null): string {
   if (!min && !max) return "";
-  if (min && !max) return `${formatPace(min)}/km`;
-  if (!min && max) return `${formatPace(max)}/km`;
-  return `${formatPace(min!)} – ${formatPace(max!)}/km`;
+  if (min && !max) return `${formatPace(min)} /km`;
+  if (!min && max) return `${formatPace(max)} /km`;
+  return `${formatPace(min!)} – ${formatPace(max!)} /km`;
 }
 
 export function formatDistance(km: number): string {
-  return km % 1 === 0 ? `${km}km` : `${km.toFixed(1)}km`;
+  return km % 1 === 0 ? `${km} km` : `${km.toFixed(1)} km`;
 }
 
 export function avatarFallbackColor(username: string): string {
@@ -41,16 +41,18 @@ export function formatRelativeRunTime(dateStr: string): string {
   const diffHours = diffMs / (1000 * 60 * 60);
   const diffDays = diffMs / (1000 * 60 * 60 * 24);
 
+  const timeStr = date.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+
   if (diffMs < 0) {
     const absDays = Math.abs(diffDays);
-    if (absDays < 1) return "Earlier today";
-    if (absDays < 2) return "Yesterday";
+    if (absDays < 1) return `Earlier today \u00B7 ${timeStr}`;
+    if (absDays < 2) return `Yesterday \u00B7 ${timeStr}`;
     return date.toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short" });
   }
 
   if (diffHours < 1) return "Starting soon";
-  if (diffDays < 1) return `Today \u00B7 ${date.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}`;
-  if (diffDays < 2) return `Tomorrow \u00B7 ${date.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}`;
-  if (diffDays < 7) return `${date.toLocaleDateString(undefined, { weekday: "long" })} \u00B7 ${date.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}`;
+  if (diffDays < 1) return `Today \u00B7 ${timeStr}`;
+  if (diffDays < 2) return `Tomorrow \u00B7 ${timeStr}`;
+  if (diffDays < 7) return `${date.toLocaleDateString(undefined, { weekday: "long" })} \u00B7 ${timeStr}`;
   return date.toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit" });
 }

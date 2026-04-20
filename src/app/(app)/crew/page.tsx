@@ -1,11 +1,13 @@
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { Avatar } from "@/components/ui/Avatar";
-import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { formatPaceRange } from "@/lib/utils";
 import Link from "next/link";
 import type { Profile } from "@/types/database";
+import { FriendRequestActions } from "./FriendRequestActions";
+import { RemoveCrewButton } from "./RemoveCrewButton";
+import { InviteCard } from "./InviteCard";
 
 export default async function CrewPage() {
   const supabase = createServerSupabaseClient();
@@ -38,28 +40,7 @@ export default async function CrewPage() {
       </h1>
 
       {/* Invite */}
-      <div className="run-card p-4 space-y-3">
-        <p className="font-body text-sm font-medium text-kith-text">
-          Invite your crew
-        </p>
-        <p className="font-body text-xs text-kith-muted">
-          Share your link and run together.
-        </p>
-        <Button
-          variant="secondary"
-          onClick={() => {
-            if (navigator.share) {
-              navigator.share({
-                title: "Join me on Kith",
-                text: "Run with me on Kith!",
-                url: `${window.location.origin}/invite/${user!.id}`,
-              });
-            }
-          }}
-        >
-          Share invite link
-        </Button>
-      </div>
+      <InviteCard userId={user.id} />
 
       {/* Pending requests */}
       {pendingIncoming.length > 0 && (
@@ -72,7 +53,7 @@ export default async function CrewPage() {
             return (
               <div
                 key={f.id}
-                className="flex items-center gap-3 py-2"
+                className="bg-white rounded-card p-4 flex items-center gap-3 border border-kith-gray-light shadow-card"
               >
                 <Link href={`/profile/${profile.username}`}>
                   <Avatar
@@ -90,14 +71,7 @@ export default async function CrewPage() {
                     @{profile.username}
                   </p>
                 </div>
-                <div className="flex gap-2">
-                  <Button variant="primary" className="text-xs px-3 py-1.5">
-                    Accept
-                  </Button>
-                  <Button variant="ghost" className="text-xs px-3 py-1.5 text-kith-muted">
-                    Decline
-                  </Button>
-                </div>
+                <FriendRequestActions friendshipId={f.id} />
               </div>
             );
           })}
@@ -110,42 +84,56 @@ export default async function CrewPage() {
           My crew ({accepted.length})
         </h2>
         {accepted.length === 0 ? (
-          <div className="text-center py-10">
-            <p className="font-body text-sm text-kith-muted">
-              No crew yet. Share your invite link to get started.
+          <div className="bg-kith-surface rounded-card p-8 text-center flex flex-col items-center">
+            <svg width="64" height="40" viewBox="0 0 64 40" fill="none" className="mb-3 text-kith-muted/60">
+              <circle cx="20" cy="14" r="6" stroke="currentColor" strokeWidth="1.5" />
+              <path d="M10 34c0-5.523 4.477-10 10-10s10 4.477 10 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              <circle cx="44" cy="14" r="6" stroke="currentColor" strokeWidth="1.5" />
+              <path d="M34 34c0-5.523 4.477-10 10-10s10 4.477 10 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              <path d="M28 20h8" stroke="#F95E2E" strokeWidth="1.5" strokeLinecap="round" strokeDasharray="2 3" />
+            </svg>
+            <p className="font-body text-sm text-kith-muted mb-1">
+              No crew yet.
+            </p>
+            <p className="font-body text-xs text-kith-muted">
+              Share your invite link to find running partners.
             </p>
           </div>
         ) : (
-          accepted.map((f) => {
-            const profile = getFriendProfile(f as unknown as Record<string, unknown>);
-            return (
-              <Link
-                key={f.id}
-                href={`/profile/${profile.username}`}
-                className="flex items-center gap-3 py-2"
-              >
-                <Avatar
-                  src={profile.avatar_url}
-                  username={profile.username}
-                  fullName={profile.full_name}
-                  size="md"
-                />
-                <div className="flex-1 min-w-0">
-                  <p className="font-body text-sm font-medium text-kith-text truncate">
-                    {profile.full_name ?? profile.username}
-                  </p>
-                  <p className="font-body text-xs text-kith-muted">
-                    @{profile.username}
-                  </p>
+          <div className="space-y-3">
+            {accepted.map((f) => {
+              const profile = getFriendProfile(f as unknown as Record<string, unknown>);
+              return (
+                <div
+                  key={f.id}
+                  className="bg-white rounded-card p-4 flex items-center gap-3 border border-kith-gray-light shadow-card hover:shadow-card-hover transition-shadow"
+                >
+                  <Link href={`/profile/${profile.username}`} className="flex items-center gap-3 flex-1 min-w-0">
+                    <Avatar
+                      src={profile.avatar_url}
+                      username={profile.username}
+                      fullName={profile.full_name}
+                      size="md"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-body text-sm font-medium text-kith-text truncate">
+                        {profile.full_name ?? profile.username}
+                      </p>
+                      <p className="font-body text-xs text-kith-muted">
+                        @{profile.username}
+                      </p>
+                    </div>
+                  </Link>
+                  {(profile.pace_min || profile.pace_max) && (
+                    <Badge variant="pace">
+                      {formatPaceRange(profile.pace_min, profile.pace_max)}
+                    </Badge>
+                  )}
+                  <RemoveCrewButton friendshipId={f.id} />
                 </div>
-                {(profile.pace_min || profile.pace_max) && (
-                  <Badge variant="pace">
-                    {formatPaceRange(profile.pace_min, profile.pace_max)}
-                  </Badge>
-                )}
-              </Link>
-            );
-          })
+              );
+            })}
+          </div>
         )}
       </div>
     </div>

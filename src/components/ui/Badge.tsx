@@ -1,12 +1,13 @@
 import { clsx } from "clsx";
 
-type BadgeVariant = "public" | "live" | "crew" | "pace";
+type BadgeVariant = "public" | "live" | "crew" | "pace" | "joined";
 
 const variantStyles: Record<BadgeVariant, string> = {
   public: "bg-kith-surface text-kith-muted",
   live: "bg-kith-orange/10 text-kith-orange",
   crew: "bg-kith-black/5 text-kith-black",
   pace: "bg-kith-surface text-kith-text",
+  joined: "bg-green-50 text-green-600",
 };
 
 interface BadgeProps {
@@ -19,7 +20,7 @@ export function Badge({ variant, children, className }: BadgeProps) {
   return (
     <span
       className={clsx(
-        "inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-body font-medium",
+        "inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-body font-medium",
         variantStyles[variant],
         className
       )}

@@ -1,8 +1,17 @@
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import { ProfileHeader } from "@/components/profile/ProfileHeader";
+import { ProfileStats } from "@/components/profile/ProfileStats";
+import { BadgeGrid } from "@/components/profile/BadgeGrid";
 import { CrewButton } from "@/components/profile/CrewButton";
 import { RunCardCompact } from "@/components/run/RunCardCompact";
+import { Badge } from "@/components/ui/Badge";
+import { fetchBadgeStats } from "@/lib/badges-server";
+
+function formatMemberSince(dateStr: string): string {
+  const date = new Date(dateStr);
+  return date.toLocaleDateString("en-GB", { month: "short", year: "numeric" });
+}
 
 export default async function UserProfilePage({
   params,
@@ -23,22 +32,71 @@ export default async function UserProfilePage({
 
   if (!profile) notFound();
 
-  const { count: runCount } = await supabase
-    .from("runs")
-    .select("*", { count: "exact", head: true })
-    .eq("creator_id", profile.id);
+  // Fetch badge stats and basic counts in parallel
+  const [
+    badgeStats,
+    { count: runCount },
+    { count: joinedCount },
+    { count: crewSize },
+    { data: createdRunsForDistance },
+    { data: joinedParticipants },
+    { data: upcomingRuns },
+  ] = await Promise.all([
+    fetchBadgeStats(supabase, profile.id),
+    supabase
+      .from("runs")
+      .select("*", { count: "exact", head: true })
+      .eq("creator_id", profile.id),
+    supabase
+      .from("run_participants")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", profile.id),
+    supabase
+      .from("friendships")
+      .select("*", { count: "exact", head: true })
+      .eq("status", "accepted")
+      .or(`user_a.eq.${profile.id},user_b.eq.${profile.id}`),
+    // Distance from created runs
+    supabase
+      .from("runs")
+      .select("distance_km")
+      .eq("creator_id", profile.id),
+    // Joined run IDs for distance
+    supabase
+      .from("run_participants")
+      .select("run_id")
+      .eq("user_id", profile.id),
+    // Upcoming runs
+    supabase
+      .from("runs")
+      .select("*")
+      .eq("creator_id", profile.id)
+      .eq("status", "upcoming")
+      .order("scheduled_at", { ascending: true })
+      .limit(6),
+  ]);
 
-  const { count: joinedCount } = await supabase
-    .from("run_participants")
-    .select("*", { count: "exact", head: true })
-    .eq("user_id", profile.id);
+  // Total distance: created + joined
+  const createdDistance = (createdRunsForDistance ?? []).reduce(
+    (sum, r) => sum + (r.distance_km ?? 0),
+    0
+  );
+  let joinedDistance = 0;
+  if (joinedParticipants && joinedParticipants.length > 0) {
+    const runIds = joinedParticipants.map((p) => p.run_id);
+    const { data: joinedRunDetails } = await supabase
+      .from("runs")
+      .select("distance_km")
+      .in("id", runIds);
+    joinedDistance = (joinedRunDetails ?? []).reduce(
+      (sum, r) => sum + (r.distance_km ?? 0),
+      0
+    );
+  }
+  const totalDistanceKm =
+    Math.round((createdDistance + joinedDistance) * 10) / 10;
 
-  const { count: crewSize } = await supabase
-    .from("friendships")
-    .select("*", { count: "exact", head: true })
-    .eq("status", "accepted")
-    .or(`user_a.eq.${profile.id},user_b.eq.${profile.id}`);
-
+  // Friendship status
   let friendStatus: "none" | "pending" | "accepted" = "none";
   if (user && user.id !== profile.id) {
     const { data: friendship } = await supabase
@@ -54,22 +112,69 @@ export default async function UserProfilePage({
     }
   }
 
-  const { data: upcomingRuns } = await supabase
-    .from("runs")
-    .select("*")
-    .eq("creator_id", profile.id)
-    .eq("status", "upcoming")
-    .order("scheduled_at", { ascending: true })
-    .limit(6);
+  // "Runs together" count: only if viewer is in their crew
+  let runsTogether: number | undefined;
+  if (user && friendStatus === "accepted") {
+    // Find runs where BOTH users are participants (or one created it and the other joined)
+    // Strategy: get all run_ids for both users, then count the intersection
+    const [{ data: viewerParticipations }, { data: profileParticipations }] =
+      await Promise.all([
+        supabase
+          .from("run_participants")
+          .select("run_id")
+          .eq("user_id", user.id),
+        supabase
+          .from("run_participants")
+          .select("run_id")
+          .eq("user_id", profile.id),
+      ]);
+
+    if (viewerParticipations && profileParticipations) {
+      const viewerRunIds = new Set(viewerParticipations.map((p) => p.run_id));
+      runsTogether = profileParticipations.filter((p) =>
+        viewerRunIds.has(p.run_id)
+      ).length;
+    }
+  }
+
+  const crewBadge =
+    friendStatus === "accepted" ? (
+      <Badge variant="joined" className="!text-xs">
+        <svg
+          width="12"
+          height="12"
+          viewBox="0 0 16 16"
+          fill="none"
+          className="shrink-0"
+        >
+          <path
+            d="M13.5 4.5L6.5 11.5L2.5 7.5"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+        In your crew
+      </Badge>
+    ) : null;
+
+  const displayName = profile.full_name ?? profile.username;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <ProfileHeader
         profile={profile}
         runCount={runCount ?? 0}
         joinedCount={joinedCount ?? 0}
         crewSize={crewSize ?? 0}
+        badge={crewBadge}
       />
+
+      {/* Member since */}
+      <p className="text-center font-body text-xs text-kith-muted">
+        Member since {formatMemberSince(profile.created_at)}
+      </p>
 
       {user && user.id !== profile.id && (
         <div className="flex justify-center">
@@ -81,18 +186,38 @@ export default async function UserProfilePage({
         </div>
       )}
 
-      {upcomingRuns && upcomingRuns.length > 0 && (
-        <div className="space-y-3">
-          <h2 className="font-display font-bold text-sm text-kith-text">
-            Upcoming runs
-          </h2>
+      {/* Rich stats */}
+      <ProfileStats
+        runsPosted={runCount ?? 0}
+        runsJoined={joinedCount ?? 0}
+        crewSize={crewSize ?? 0}
+        totalDistanceKm={totalDistanceKm}
+        streakWeeks={0}
+        runsTogether={runsTogether}
+      />
+
+      {/* Badges -- earned only for other users */}
+      <BadgeGrid stats={badgeStats} earnedOnly />
+
+      {/* Upcoming runs */}
+      <div className="space-y-3">
+        <h2 className="font-body text-xs text-kith-muted uppercase tracking-wider">
+          Upcoming runs
+        </h2>
+        {upcomingRuns && upcomingRuns.length > 0 ? (
           <div className="grid grid-cols-2 gap-3">
             {upcomingRuns.map((run) => (
               <RunCardCompact key={run.id} run={run} />
             ))}
           </div>
-        </div>
-      )}
+        ) : (
+          <div className="bg-kith-surface rounded-card p-8 text-center">
+            <p className="font-body text-sm text-kith-muted">
+              No upcoming runs from {displayName} yet.
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

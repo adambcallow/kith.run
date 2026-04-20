@@ -18,6 +18,7 @@ interface AvatarProps {
   fullName?: string | null;
   size?: AvatarSize;
   showOnline?: boolean;
+  ring?: boolean;
   className?: string;
 }
 
@@ -27,26 +28,37 @@ export function Avatar({
   fullName,
   size = "md",
   showOnline,
+  ring,
   className,
 }: AvatarProps) {
   const initials = getInitials(fullName ?? null, username);
   const fallbackBg = avatarFallbackColor(username);
 
   return (
-    <div className={clsx("relative inline-flex shrink-0", className)}>
+    <div
+      className={clsx(
+        "relative inline-flex shrink-0",
+        ring && "ring-2 ring-white rounded-full",
+        className
+      )}
+    >
       {src ? (
         <img
           src={src}
           alt={fullName ?? username}
+          loading="lazy"
           className={clsx("rounded-full object-cover", sizeMap[size])}
         />
       ) : (
         <div
           className={clsx(
-            "rounded-full flex items-center justify-center font-display font-bold text-white",
+            "rounded-full flex items-center justify-center font-display font-semibold text-white",
             sizeMap[size]
           )}
-          style={{ backgroundColor: fallbackBg }}
+          style={{
+            backgroundColor: fallbackBg,
+            textShadow: "0 1px 2px rgba(0,0,0,0.2)",
+          }}
         >
           {initials}
         </div>

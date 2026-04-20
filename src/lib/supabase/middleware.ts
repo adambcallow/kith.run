@@ -31,7 +31,8 @@ export async function updateSession(request: NextRequest) {
 
   const isAuthPage =
     request.nextUrl.pathname.startsWith("/login") ||
-    request.nextUrl.pathname.startsWith("/signup");
+    request.nextUrl.pathname.startsWith("/signup") ||
+    request.nextUrl.pathname.startsWith("/verify");
   const isPublicPage =
     request.nextUrl.pathname === "/" ||
     request.nextUrl.pathname.startsWith("/invite");

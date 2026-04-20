@@ -3,7 +3,9 @@
   "short_name": "Kith",
   "description": "Run with your people.",
   "start_url": "/feed",
+  "scope": "/",
   "display": "standalone",
+  "orientation": "portrait-primary",
   "background_color": "#FFFFFF",
   "theme_color": "#F95E2E",
   "icons": [

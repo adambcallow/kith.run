@@ -28,6 +28,8 @@ export default function RootLayout({
           href="https://fonts.gstatic.com"
           crossOrigin="anonymous"
         />
+
+        {/* Google Maps script loaded on-demand by LocationPicker */}
       </head>
       <body className="font-body antialiased bg-white text-kith-text">
         {children}
