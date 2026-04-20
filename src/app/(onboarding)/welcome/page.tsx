@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { createNotification } from "@/lib/notifications";
 import { AvatarUpload } from "@/app/(app)/profile/edit/AvatarUpload";
 import { Avatar } from "@/components/ui/Avatar";
 
@@ -68,6 +69,9 @@ export default function WelcomePage() {
   /* ── Share state ── */
   const [copied, setCopied] = useState(false);
 
+  /* ── Invite auto-connect state ── */
+  const [inviterName, setInviterName] = useState<string | null>(null);
+
   /* ── Load user on mount ── */
   useEffect(() => {
     async function load() {
@@ -97,6 +101,50 @@ export default function WelcomePage() {
         if (profile.avatar_url) setAvatarUrl(profile.avatar_url);
         if (profile.full_name) setFullName(profile.full_name);
         if (profile.username) setUsername(profile.username);
+      }
+
+      // Auto-connect with the person who invited this user
+      const invitedBy = meta.invited_by as string | undefined;
+      if (invitedBy && invitedBy !== user.id) {
+        // Check if a friendship already exists to avoid duplicates
+        const { data: existing } = await supabase
+          .from("friendships")
+          .select("id")
+          .or(
+            `and(user_a.eq.${user.id},user_b.eq.${invitedBy}),and(user_a.eq.${invitedBy},user_b.eq.${user.id})`
+          )
+          .maybeSingle();
+
+        if (!existing) {
+          // Create an accepted friendship — the invite IS the acceptance
+          await supabase.from("friendships").insert({
+            user_a: user.id,
+            user_b: invitedBy,
+            status: "accepted",
+          });
+
+          // Notify the inviter
+          createNotification({
+            recipientId: invitedBy,
+            type: "friend_request",
+            payload: { user_id: user.id },
+          });
+        }
+
+        // Fetch inviter name for the welcome message
+        const { data: inviterProfile } = await supabase
+          .from("profiles")
+          .select("full_name, username")
+          .eq("id", invitedBy)
+          .maybeSingle();
+
+        if (inviterProfile) {
+          setInviterName(
+            inviterProfile.full_name
+              ? inviterProfile.full_name.split(" ")[0]
+              : inviterProfile.username
+          );
+        }
       }
 
       setLoading(false);
@@ -283,6 +331,17 @@ export default function WelcomePage() {
                 >
                   Let&apos;s get you set up in under a minute.
                 </p>
+                {inviterName && (
+                  <p
+                    className="font-body text-sm text-kith-orange font-medium max-w-[280px] mx-auto"
+                    style={{
+                      animation: "fadeUp 0.6s ease-out both",
+                      animationDelay: "280ms",
+                    }}
+                  >
+                    You&apos;ve been added to {inviterName}&apos;s crew!
+                  </p>
+                )}
               </div>
 
               <button

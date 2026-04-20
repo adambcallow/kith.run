@@ -7,7 +7,9 @@ import Link from "next/link";
 import type { Profile } from "@/types/database";
 import { FriendRequestActions } from "./FriendRequestActions";
 import { RemoveCrewButton } from "./RemoveCrewButton";
+import { CancelRequestButton } from "./CancelRequestButton";
 import { InviteCard } from "./InviteCard";
+import { UserSearch } from "./UserSearch";
 
 export default async function CrewPage() {
   const supabase = createServerSupabaseClient();
@@ -28,6 +30,9 @@ export default async function CrewPage() {
   const pendingIncoming = (friendships ?? []).filter(
     (f) => f.status === "pending" && f.user_b === user.id
   );
+  const pendingOutgoing = (friendships ?? []).filter(
+    (f) => f.status === "pending" && f.user_a === user.id
+  );
 
   function getFriendProfile(f: Record<string, unknown>): Profile {
     return (f.user_a === user!.id ? f.user_b_profile : f.user_a_profile) as Profile;
@@ -38,6 +43,9 @@ export default async function CrewPage() {
       <h1 className="font-display font-bold text-xl text-kith-text">
         Your crew
       </h1>
+
+      {/* Search */}
+      <UserSearch currentUserId={user.id} />
 
       {/* Invite */}
       <InviteCard userId={user.id} />
@@ -72,6 +80,45 @@ export default async function CrewPage() {
                   </p>
                 </div>
                 <FriendRequestActions friendshipId={f.id} />
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Sent requests */}
+      {pendingOutgoing.length > 0 && (
+        <div className="space-y-3">
+          <h2 className="font-body text-xs text-kith-muted uppercase tracking-wider">
+            Sent requests ({pendingOutgoing.length})
+          </h2>
+          {pendingOutgoing.map((f) => {
+            const profile = getFriendProfile(f as unknown as Record<string, unknown>);
+            return (
+              <div
+                key={f.id}
+                className="bg-white rounded-card p-4 flex items-center gap-3 border border-kith-gray-light shadow-card"
+              >
+                <Link href={`/profile/${profile.username}`}>
+                  <Avatar
+                    src={profile.avatar_url}
+                    username={profile.username}
+                    fullName={profile.full_name}
+                    size="md"
+                  />
+                </Link>
+                <div className="flex-1 min-w-0">
+                  <p className="font-body text-sm font-medium text-kith-text truncate">
+                    {profile.full_name ?? profile.username}
+                  </p>
+                  <p className="font-body text-xs text-kith-muted">
+                    @{profile.username}
+                  </p>
+                </div>
+                <span className="text-xs font-body text-kith-muted bg-kith-surface px-2 py-0.5 rounded-full">
+                  Pending
+                </span>
+                <CancelRequestButton friendshipId={f.id} />
               </div>
             );
           })}

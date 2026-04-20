@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
@@ -16,6 +16,8 @@ export default function SignupPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const invitedBy = searchParams.get("invited_by");
   const supabase = createClient();
 
   async function handleSubmit(e: React.FormEvent) {
@@ -54,6 +56,7 @@ export default function SignupPage() {
         data: {
           username: username.toLowerCase().trim(),
           full_name: fullName.trim() || null,
+          ...(invitedBy ? { invited_by: invitedBy } : {}),
         },
         emailRedirectTo: redirectUrl,
       },

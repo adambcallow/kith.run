@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { createNotification } from "@/lib/notifications";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { ErrorAlert } from "@/components/ui/ErrorAlert";
@@ -14,6 +15,8 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const invitedBy = searchParams.get("invited_by");
   const supabase = createClient();
 
   async function handleSubmit(e: React.FormEvent) {
@@ -30,6 +33,42 @@ export default function LoginPage() {
       setError(authError.message);
       setLoading(false);
       return;
+    }
+
+    // If the user arrived via an invite link, auto-connect with the inviter
+    if (invitedBy) {
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+
+        if (user && invitedBy !== user.id) {
+          // Check if a friendship already exists
+          const { data: existing } = await supabase
+            .from("friendships")
+            .select("id")
+            .or(
+              `and(user_a.eq.${user.id},user_b.eq.${invitedBy}),and(user_a.eq.${invitedBy},user_b.eq.${user.id})`
+            )
+            .maybeSingle();
+
+          if (!existing) {
+            await supabase.from("friendships").insert({
+              user_a: user.id,
+              user_b: invitedBy,
+              status: "accepted",
+            });
+
+            createNotification({
+              recipientId: invitedBy,
+              type: "friend_request",
+              payload: { user_id: user.id },
+            });
+          }
+        }
+      } catch {
+        // Non-blocking — don't prevent login if friendship insert fails
+      }
     }
 
     router.push("/feed");
