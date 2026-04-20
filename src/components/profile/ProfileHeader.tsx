@@ -1,10 +1,17 @@
 import { Avatar } from "@/components/ui/Avatar";
-import type { Profile } from "@/types/database";
+import type { Profile, PersonalBest } from "@/types/database";
 
-const PB_DISTANCE_LABELS: Record<number, string> = {
+const PB_DISTANCE_LABELS: Record<string, string> = {
+  "5k": "5K",
+  "10k": "10K",
+  half: "Half",
+  marathon: "Marathon",
+};
+
+const LEGACY_DISTANCE_LABELS: Record<number, string> = {
   5000: "5K",
   10000: "10K",
-  21097: "Half Marathon",
+  21097: "Half",
   42195: "Marathon",
 };
 
@@ -37,8 +44,21 @@ export function ProfileHeader({
   badge,
   clubs,
 }: ProfileHeaderProps) {
-  const pbDistanceLabel = profile.pace_max ? PB_DISTANCE_LABELS[profile.pace_max] : null;
-  const pbTime = profile.pace_min ? formatPbTime(profile.pace_min) : null;
+  // Build list of PBs to display: prefer personal_bests jsonb, fall back to old fields
+  const pbs: { label: string; time: string }[] = [];
+  const personalBests = (profile.personal_bests as PersonalBest[] | null) ?? [];
+
+  if (personalBests.length > 0) {
+    for (const pb of personalBests) {
+      const label = PB_DISTANCE_LABELS[pb.distance] ?? pb.distance;
+      pbs.push({ label, time: formatPbTime(pb.seconds) });
+    }
+  } else if (profile.pace_min && profile.pace_max) {
+    const label = LEGACY_DISTANCE_LABELS[profile.pace_max];
+    if (label) {
+      pbs.push({ label, time: formatPbTime(profile.pace_min) });
+    }
+  }
 
   return (
     <div className="flex flex-col items-center gap-4">
@@ -66,12 +86,31 @@ export function ProfileHeader({
         </p>
       </div>
 
-      {/* PB badge */}
-      {pbDistanceLabel && pbTime && (
-        <span className="inline-flex items-center gap-1.5 bg-kith-surface text-kith-text font-body font-medium text-sm px-4 py-1.5 rounded-pill">
-          <span className="font-display font-bold">{pbTime}</span>
-          <span className="text-kith-muted">{pbDistanceLabel}</span>
-        </span>
+      {/* PB badges */}
+      {pbs.length > 0 && (
+        <div className="flex flex-wrap justify-center gap-2">
+          {pbs.map((pb) => (
+            <span
+              key={pb.label}
+              className="inline-flex items-center gap-1.5 bg-gradient-to-r from-kith-orange/10 to-kith-orange/5 text-kith-text font-body font-medium text-sm px-4 py-1.5 rounded-pill"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+                className="w-3.5 h-3.5 text-kith-orange"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              <span className="font-display font-bold">{pb.time}</span>
+              <span className="text-kith-muted">{pb.label}</span>
+            </span>
+          ))}
+        </div>
       )}
 
       {/* Strava link */}

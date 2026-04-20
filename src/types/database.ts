@@ -13,6 +13,7 @@ export type Database = {
           pace_max: number | null;
           strava_id: string | null;
           garmin_id: string | null;
+          personal_bests: PersonalBest[] | null;
           created_at: string;
         };
         Insert: {
@@ -26,6 +27,7 @@ export type Database = {
           pace_max?: number | null;
           strava_id?: string | null;
           garmin_id?: string | null;
+          personal_bests?: PersonalBest[] | null;
           created_at?: string;
         };
         Update: {
@@ -39,6 +41,7 @@ export type Database = {
           pace_max?: number | null;
           strava_id?: string | null;
           garmin_id?: string | null;
+          personal_bests?: PersonalBest[] | null;
           created_at?: string;
         };
         Relationships: [];
@@ -287,3 +290,8 @@ export type Reaction = Database["public"]["Tables"]["reactions"]["Row"];
 export type Notification = Database["public"]["Tables"]["notifications"]["Row"];
 export type RunClub = Database["public"]["Tables"]["run_clubs"]["Row"];
 export type RunClubMember = Database["public"]["Tables"]["run_club_members"]["Row"];
+
+export interface PersonalBest {
+  distance: "5k" | "10k" | "half" | "marathon";
+  seconds: number;
+}

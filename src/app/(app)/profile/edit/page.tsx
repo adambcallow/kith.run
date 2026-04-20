@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/Input";
 import { PbTimePicker } from "@/components/profile/PbTimePicker";
 import { AvatarUpload } from "./AvatarUpload";
 import { ErrorAlert } from "@/components/ui/ErrorAlert";
+import type { PersonalBest } from "@/types/database";
 
 const BIO_MAX = 160;
 
@@ -33,11 +34,13 @@ export default function EditProfilePage() {
   const [bio, setBio] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
-  // PB state — stored as JSON in the bio metadata or pace_min/pace_max
-  // We'll use pace_min to store PB seconds, pace_max to encode the distance
-  // Distance encoding: 5k=5000, 10k=10000, half=21097, marathon=42195
-  const [pbDistance, setPbDistance] = useState<string>("5k");
-  const [pbSeconds, setPbSeconds] = useState<number | null>(null);
+  // PB state — one entry per distance, null means no PB set
+  const [personalBests, setPersonalBests] = useState<Record<string, number | null>>({
+    "5k": null,
+    "10k": null,
+    half: null,
+    marathon: null,
+  });
 
   // Strava profile URL
   const [stravaUrl, setStravaUrl] = useState("");
@@ -73,7 +76,7 @@ export default function EditProfilePage() {
 
       const { data: profile } = await supabase
         .from("profiles")
-        .select("username, full_name, avatar_url, bio, pace_min, pace_max, strava_id")
+        .select("username, full_name, avatar_url, bio, pace_min, pace_max, strava_id, personal_bests")
         .eq("id", user.id)
         .single();
 
@@ -84,14 +87,28 @@ export default function EditProfilePage() {
         setAvatarUrl(profile.avatar_url ?? null);
         setStravaUrl(profile.strava_id ?? "");
 
-        // Decode PB from pace_min (seconds) and pace_max (distance code)
-        if (profile.pace_min && profile.pace_max) {
+        // Load personal_bests from jsonb column
+        const pbs = (profile.personal_bests as PersonalBest[] | null) ?? [];
+        const loaded: Record<string, number | null> = {
+          "5k": null,
+          "10k": null,
+          half: null,
+          marathon: null,
+        };
+
+        if (pbs.length > 0) {
+          for (const pb of pbs) {
+            loaded[pb.distance] = pb.seconds;
+          }
+        } else if (profile.pace_min && profile.pace_max) {
+          // Migrate from old pace_min/pace_max fields
           const dist = codeToDistance[profile.pace_max];
           if (dist) {
-            setPbDistance(dist);
-            setPbSeconds(profile.pace_min);
+            loaded[dist] = profile.pace_min;
           }
         }
+
+        setPersonalBests(loaded);
       }
 
       setLoading(false);
@@ -107,8 +124,23 @@ export default function EditProfilePage() {
 
     setSaving(true);
 
-    // Encode PB
-    const pbDistCode = distanceToCode[pbDistance] ?? null;
+    // Build personal_bests array from the record (only non-null entries)
+    const pbArray: PersonalBest[] = [];
+    for (const d of PB_DISTANCES) {
+      const secs = personalBests[d.value];
+      if (secs != null && secs > 0) {
+        pbArray.push({ distance: d.value as PersonalBest["distance"], seconds: secs });
+      }
+    }
+
+    // Backward compat: write the fastest PB to pace_min/pace_max
+    let backcompatMin: number | null = null;
+    let backcompatMax: number | null = null;
+    if (pbArray.length > 0) {
+      // Pick the first PB by distance order as the "primary" for backward compat
+      backcompatMin = pbArray[0].seconds;
+      backcompatMax = distanceToCode[pbArray[0].distance] ?? null;
+    }
 
     const { error } = await supabase
       .from("profiles")
@@ -116,8 +148,9 @@ export default function EditProfilePage() {
         full_name: fullName.trim(),
         bio: bio.trim(),
         avatar_url: avatarUrl,
-        pace_min: pbSeconds,
-        pace_max: pbDistCode,
+        personal_bests: pbArray,
+        pace_min: backcompatMin,
+        pace_max: backcompatMax,
         strava_id: stravaUrl.trim() || null,
       })
       .eq("id", userId!);
@@ -179,7 +212,11 @@ export default function EditProfilePage() {
               username={username}
               fullName={fullName}
               userId={userId}
-              onUpload={(url) => setAvatarUrl(url)}
+              onUpload={(url) => {
+                setAvatarUrl(url);
+                // Persist immediately so avatar isn't lost if user navigates away
+                supabase.from("profiles").update({ avatar_url: url }).eq("id", userId);
+              }}
             />
           )}
         </section>
@@ -243,45 +280,74 @@ export default function EditProfilePage() {
           </div>
         </section>
 
-        {/* Personal Best */}
+        {/* Personal Bests */}
         <section className="bg-kith-surface rounded-card p-5 space-y-4">
           <div>
             <h2 className="font-display font-bold text-sm text-kith-text">
-              Personal best
+              Personal bests
             </h2>
             <p className="font-body text-xs text-kith-muted mt-0.5">
-              Pick a distance and enter your PB
+              Add your PB for each distance
             </p>
           </div>
 
-          {/* Distance selector */}
-          <div className="flex gap-2">
-            {PB_DISTANCES.map((d) => (
-              <button
-                key={d.value}
-                type="button"
-                onClick={() => setPbDistance(d.value)}
-                className={`flex-1 py-2.5 rounded-pill text-sm font-body font-medium transition-all duration-200 ${
-                  pbDistance === d.value
-                    ? "bg-kith-black text-white shadow-sm"
-                    : "bg-white text-kith-muted border border-kith-gray-light hover:border-kith-text/20"
-                }`}
-              >
-                {d.label}
-              </button>
-            ))}
-          </div>
-
-          {/* PB time picker */}
-          <div className="space-y-1.5">
-            <label className="text-sm font-body font-medium text-kith-text">
-              Your {PB_DISTANCES.find((d) => d.value === pbDistance)?.label} time
-            </label>
-            <PbTimePicker
-              value={pbSeconds}
-              onChange={setPbSeconds}
-              showHours={pbDistance === "half" || pbDistance === "marathon"}
-            />
+          {/* Distance list — one row per distance */}
+          <div className="space-y-4">
+            {PB_DISTANCES.map((d) => {
+              const hasValue = personalBests[d.value] != null && personalBests[d.value]! > 0;
+              return (
+                <div key={d.value} className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      {hasValue && (
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                          className="w-4 h-4 text-kith-orange"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      )}
+                      <span className="font-body text-sm font-medium text-kith-text">
+                        {d.label}
+                      </span>
+                    </div>
+                    {hasValue && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setPersonalBests((prev) => ({ ...prev, [d.value]: null }))
+                        }
+                        className="flex items-center gap-1 text-xs font-body text-kith-muted hover:text-red-500 transition-colors"
+                        aria-label={`Clear ${d.label} PB`}
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                          className="w-3.5 h-3.5"
+                        >
+                          <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
+                        </svg>
+                        Clear
+                      </button>
+                    )}
+                  </div>
+                  <PbTimePicker
+                    value={personalBests[d.value] ?? null}
+                    onChange={(secs) =>
+                      setPersonalBests((prev) => ({ ...prev, [d.value]: secs }))
+                    }
+                    showHours={d.value === "half" || d.value === "marathon"}
+                  />
+                </div>
+              );
+            })}
           </div>
         </section>
 
