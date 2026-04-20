@@ -6,6 +6,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { PbTimePicker } from "@/components/profile/PbTimePicker";
 import { AvatarUpload } from "./AvatarUpload";
 import { ErrorAlert } from "@/components/ui/ErrorAlert";
 
@@ -17,29 +18,6 @@ const PB_DISTANCES = [
   { label: "Half Marathon", value: "half" },
   { label: "Marathon", value: "marathon" },
 ] as const;
-
-function parsePbMinutes(str: string): number | null {
-  const parts = str.split(":").map(Number);
-  if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
-    return parts[0] * 60 + parts[1];
-  }
-  if (parts.length === 3 && !isNaN(parts[0]) && !isNaN(parts[1]) && !isNaN(parts[2])) {
-    return parts[0] * 3600 + parts[1] * 60 + parts[2];
-  }
-  return null;
-}
-
-function formatPbTime(totalSeconds: number): string {
-  if (totalSeconds >= 3600) {
-    const h = Math.floor(totalSeconds / 3600);
-    const m = Math.floor((totalSeconds % 3600) / 60);
-    const s = totalSeconds % 60;
-    return `${h}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
-  }
-  const m = Math.floor(totalSeconds / 60);
-  const s = totalSeconds % 60;
-  return `${m}:${s.toString().padStart(2, "0")}`;
-}
 
 export default function EditProfilePage() {
   const router = useRouter();
@@ -59,7 +37,7 @@ export default function EditProfilePage() {
   // We'll use pace_min to store PB seconds, pace_max to encode the distance
   // Distance encoding: 5k=5000, 10k=10000, half=21097, marathon=42195
   const [pbDistance, setPbDistance] = useState<string>("5k");
-  const [pbTime, setPbTime] = useState("");
+  const [pbSeconds, setPbSeconds] = useState<number | null>(null);
 
   // Strava profile URL
   const [stravaUrl, setStravaUrl] = useState("");
@@ -111,7 +89,7 @@ export default function EditProfilePage() {
           const dist = codeToDistance[profile.pace_max];
           if (dist) {
             setPbDistance(dist);
-            setPbTime(formatPbTime(profile.pace_min));
+            setPbSeconds(profile.pace_min);
           }
         }
       }
@@ -130,7 +108,6 @@ export default function EditProfilePage() {
     setSaving(true);
 
     // Encode PB
-    const pbSeconds = pbTime ? parsePbMinutes(pbTime) : null;
     const pbDistCode = distanceToCode[pbDistance] ?? null;
 
     const { error } = await supabase
@@ -295,13 +272,17 @@ export default function EditProfilePage() {
             ))}
           </div>
 
-          {/* PB time input */}
-          <Input
-            label={`Your ${PB_DISTANCES.find((d) => d.value === pbDistance)?.label} time`}
-            value={pbTime}
-            onChange={(e) => setPbTime(e.target.value)}
-            placeholder={pbDistance === "5k" || pbDistance === "10k" ? "MM:SS" : "H:MM:SS"}
-          />
+          {/* PB time picker */}
+          <div className="space-y-1.5">
+            <label className="text-sm font-body font-medium text-kith-text">
+              Your {PB_DISTANCES.find((d) => d.value === pbDistance)?.label} time
+            </label>
+            <PbTimePicker
+              value={pbSeconds}
+              onChange={setPbSeconds}
+              showHours={pbDistance === "half" || pbDistance === "marathon"}
+            />
+          </div>
         </section>
 
         {/* Strava */}

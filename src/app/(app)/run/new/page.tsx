@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { LocationPicker } from "@/components/map/LocationPicker";
+import { RunDateTimePicker } from "@/components/run/RunDateTimePicker";
 import { PaceSlider } from "@/components/run/PaceSlider";
 import {
   IntervalBuilder,

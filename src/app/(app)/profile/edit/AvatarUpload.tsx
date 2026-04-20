@@ -125,10 +125,21 @@ export function AvatarUpload({
         const cacheBustedUrl = `${publicUrl}?v=${Date.now()}`;
         setPreviewUrl(cacheBustedUrl);
         onUpload(cacheBustedUrl);
-      } catch (err) {
-        setError("Upload failed. Please try again.");
+      } catch (err: unknown) {
+        const msg =
+          err instanceof Error ? err.message : String(err);
+        // Surface actionable messages for common issues
+        if (msg.includes("Bucket not found")) {
+          setError("Storage not configured. Ask the admin to create an 'avatars' bucket.");
+        } else if (msg.includes("row-level security") || msg.includes("policy") || msg.includes("403") || msg.includes("not allowed")) {
+          setError("Storage permissions not set up. Ask the admin to add upload policies.");
+        } else if (msg.includes("Payload too large") || msg.includes("413")) {
+          setError("Image is too large even after compression. Try a smaller photo.");
+        } else {
+          setError("Upload failed. Please try again.");
+        }
         setPreviewUrl(null);
-        console.error(err);
+        console.error("Avatar upload error:", msg);
       } finally {
         setUploading(false);
         if (fileInputRef.current) fileInputRef.current.value = "";
