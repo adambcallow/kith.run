@@ -4,8 +4,8 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
 import { LocationPicker } from "@/components/map/LocationPicker";
+import { RunDateTimePicker } from "@/components/run/RunDateTimePicker";
 import { PaceSlider } from "@/components/run/PaceSlider";
 import {
   IntervalBuilder,
@@ -336,12 +336,10 @@ export default function EditRunPage() {
         {/* Date & time -- hidden when going live */}
         {!isLive && (
           <div className="animate-fade-in-up">
-            <Input
-              label="Date & time"
-              type="datetime-local"
+            <RunDateTimePicker
               value={date}
-              onChange={(e) => {
-                setDate(e.target.value);
+              onChange={(isoString) => {
+                setDate(isoString);
                 setFieldErrors((prev) => {
                   const next = { ...prev };
                   delete next.date;
@@ -349,7 +347,6 @@ export default function EditRunPage() {
                 });
               }}
               error={fieldErrors.date}
-              required={!isLive}
             />
           </div>
         )}
