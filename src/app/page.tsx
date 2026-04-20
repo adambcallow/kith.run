@@ -1,37 +1,44 @@
 import Link from "next/link";
+import ParallaxMesh from "@/components/landing/ParallaxMesh";
 
 /* ------------------------------------------------------------------ */
 /*  Landing Page — kith.run                                           */
-/*  Single viewport, no scroll, dark hero with feature collage        */
+/*  Single viewport, dark hero with premium feature collage           */
 /* ------------------------------------------------------------------ */
 
 export default function LandingPage() {
   return (
     <div className="h-screen flex flex-col items-center justify-center overflow-hidden bg-[#1B1C1F] relative">
-      {/* ── Inline animations ── */}
+      {/* ── Animation system ── */}
       <style
         dangerouslySetInnerHTML={{
           __html: `
+            /* ============================
+               BASE KEYFRAMES
+               ============================ */
+
+            /* Blob drift */
             @keyframes blob1 {
-              0%, 100% { transform: translate(0%, 0%) scale(1); }
-              25% { transform: translate(5%, -8%) scale(1.1); }
-              50% { transform: translate(-3%, 5%) scale(0.95); }
-              75% { transform: translate(8%, 2%) scale(1.05); }
+              0%, 100% { transform: translate(calc(var(--mx,0) * -18px), calc(var(--my,0) * -14px)) scale(1); }
+              25%  { transform: translate(calc(5% + var(--mx,0) * -18px), calc(-8% + var(--my,0) * -14px)) scale(1.1); }
+              50%  { transform: translate(calc(-3% + var(--mx,0) * -18px), calc(5% + var(--my,0) * -14px)) scale(0.95); }
+              75%  { transform: translate(calc(8% + var(--mx,0) * -18px), calc(2% + var(--my,0) * -14px)) scale(1.05); }
             }
             @keyframes blob2 {
-              0%, 100% { transform: translate(0%, 0%) scale(1); }
-              25% { transform: translate(-6%, 4%) scale(1.08); }
-              50% { transform: translate(4%, -6%) scale(0.92); }
-              75% { transform: translate(-2%, 8%) scale(1.12); }
+              0%, 100% { transform: translate(calc(var(--mx,0) * 14px), calc(var(--my,0) * 18px)) scale(1); }
+              25%  { transform: translate(calc(-6% + var(--mx,0) * 14px), calc(4% + var(--my,0) * 18px)) scale(1.08); }
+              50%  { transform: translate(calc(4% + var(--mx,0) * 14px), calc(-6% + var(--my,0) * 18px)) scale(0.92); }
+              75%  { transform: translate(calc(-2% + var(--mx,0) * 14px), calc(8% + var(--my,0) * 18px)) scale(1.12); }
             }
             @keyframes blob3 {
-              0%, 100% { transform: translate(0%, 0%) scale(1); }
-              33% { transform: translate(6%, 6%) scale(1.06); }
-              66% { transform: translate(-5%, -3%) scale(0.94); }
+              0%, 100% { transform: translate(calc(var(--mx,0) * -10px), calc(var(--my,0) * 12px)) scale(1); }
+              33%  { transform: translate(calc(6% + var(--mx,0) * -10px), calc(6% + var(--my,0) * 12px)) scale(1.06); }
+              66%  { transform: translate(calc(-5% + var(--mx,0) * -10px), calc(-3% + var(--my,0) * 12px)) scale(0.94); }
             }
 
+            /* ---- Entrance animations ---- */
             @keyframes fadeInUp {
-              0% { opacity: 0; transform: translateY(24px); }
+              0%   { opacity: 0; transform: translateY(24px); }
               100% { opacity: 1; transform: translateY(0); }
             }
             .enter {
@@ -40,10 +47,69 @@ export default function LandingPage() {
             .enter-d1 { animation-delay: 0.05s; }
             .enter-d2 { animation-delay: 0.15s; }
             .enter-d3 { animation-delay: 0.3s; }
+            .enter-d35 { animation-delay: 0.38s; }
             .enter-d4 { animation-delay: 0.45s; }
 
+            /* ---- Wordmark letter-spacing reveal ---- */
+            @keyframes wordmarkReveal {
+              0%   { letter-spacing: 0.18em; opacity: 0; }
+              100% { letter-spacing: 0.02em; opacity: 1; }
+            }
+            .wordmark-enter {
+              animation: wordmarkReveal 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.05s both;
+            }
+
+            /* ---- Headline shimmer (single pass on load) ---- */
+            @keyframes textShimmer {
+              0%   { background-position: -200% center; }
+              100% { background-position: 200% center; }
+            }
+            .headline-shimmer {
+              background-image: linear-gradient(
+                110deg,
+                rgba(255,255,255,0) 0%,
+                rgba(255,255,255,0) 40%,
+                rgba(255,255,255,0.12) 50%,
+                rgba(255,255,255,0) 60%,
+                rgba(255,255,255,0) 100%
+              );
+              background-size: 200% 100%;
+              -webkit-background-clip: text;
+              background-clip: text;
+              animation: textShimmer 1.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.6s both;
+            }
+
+            /* ---- "people." underline glow ---- */
+            @keyframes underlineGrow {
+              0%   { transform: scaleX(0); opacity: 0; }
+              100% { transform: scaleX(1); opacity: 1; }
+            }
+            @keyframes underlinePulse {
+              0%, 100% { opacity: 0.7; filter: blur(3px); }
+              50%      { opacity: 1; filter: blur(5px); }
+            }
+            .people-underline {
+              position: relative;
+              display: inline-block;
+            }
+            .people-underline::after {
+              content: '';
+              position: absolute;
+              bottom: -2px;
+              left: 0;
+              right: 0;
+              height: 3px;
+              border-radius: 2px;
+              background: linear-gradient(90deg, #F95E2E, #FF8F6B);
+              transform-origin: left;
+              animation: underlineGrow 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.8s both,
+                         underlinePulse 4s ease-in-out 1.4s infinite;
+              will-change: transform, opacity;
+            }
+
+            /* ---- Card entrance (staggered, with scale) ---- */
             @keyframes cardEnter {
-              0% { opacity: 0; transform: translateY(28px) scale(0.96); }
+              0%   { opacity: 0; transform: translateY(28px) scale(0.96); }
               100% { opacity: 1; transform: translateY(0) scale(1); }
             }
             .card-enter {
@@ -55,75 +121,194 @@ export default function LandingPage() {
             .card-d4 { animation-delay: 0.86s; }
             .card-d5 { animation-delay: 0.98s; }
             .card-d6 { animation-delay: 1.1s; }
+            .card-d7 { animation-delay: 1.22s; }
 
+            /* ---- Mobile card entrance (staggered scale-up) ---- */
+            @keyframes cardScaleUp {
+              0%   { opacity: 0; transform: scale(0.88); }
+              100% { opacity: 1; transform: scale(1); }
+            }
+            .card-scale-enter {
+              animation: cardScaleUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+            }
+
+            /* ---- Individual card floating ---- */
+            @keyframes float1 {
+              0%, 100% { transform: translateY(0); }
+              50%      { transform: translateY(-4px); }
+            }
+            @keyframes float2 {
+              0%, 100% { transform: translateY(0); }
+              50%      { transform: translateY(-5px); }
+            }
+            @keyframes float3 {
+              0%, 100% { transform: translateY(0); }
+              50%      { transform: translateY(-3px); }
+            }
+            @keyframes float4 {
+              0%, 100% { transform: translateY(0); }
+              50%      { transform: translateY(-6px); }
+            }
+            @keyframes float5 {
+              0%, 100% { transform: translateY(0); }
+              50%      { transform: translateY(-4px); }
+            }
+            @keyframes float6 {
+              0%, 100% { transform: translateY(0); }
+              50%      { transform: translateY(-5px); }
+            }
+
+            .card-float-1 { animation: float1 6s ease-in-out infinite 1.6s; will-change: transform; }
+            .card-float-2 { animation: float2 5.5s ease-in-out infinite 1.8s; will-change: transform; }
+            .card-float-3 { animation: float3 7s ease-in-out infinite 2.0s; will-change: transform; }
+            .card-float-4 { animation: float4 5s ease-in-out infinite 2.2s; will-change: transform; }
+            .card-float-5 { animation: float5 6.5s ease-in-out infinite 2.4s; will-change: transform; }
+            .card-float-6 { animation: float6 5.8s ease-in-out infinite 2.6s; will-change: transform; }
+
+            /* ---- Featured glow pulse ---- */
+            @keyframes glowPulse {
+              0%, 100% { opacity: 0.5; }
+              50%      { opacity: 0.85; }
+            }
+            .glow-pulse {
+              animation: glowPulse 4s ease-in-out infinite;
+            }
+
+            /* ---- CTA button glow + gradient shift ---- */
             @keyframes ctaGlow {
               0%, 100% { box-shadow: 0 0 24px 0 rgba(249,94,46,0.2); }
-              50% { box-shadow: 0 0 40px 4px rgba(249,94,46,0.35); }
+              50%      { box-shadow: 0 0 40px 4px rgba(249,94,46,0.35); }
+            }
+            @keyframes ctaGradientShift {
+              0%   { background-position: 0% 50%; }
+              50%  { background-position: 100% 50%; }
+              100% { background-position: 0% 50%; }
             }
             .cta-glow {
-              animation: ctaGlow 3s ease-in-out infinite;
+              animation: ctaGlow 3s ease-in-out infinite,
+                         ctaGradientShift 6s ease-in-out infinite;
+              background-size: 200% 200%;
             }
+
+            /* ---- Social proof fade-in ---- */
+            @keyframes fadeIn {
+              0%   { opacity: 0; }
+              100% { opacity: 1; }
+            }
+            .social-proof-enter {
+              animation: fadeIn 1.2s ease-out 0.55s both;
+            }
+
+            /* ---- Desktop card hover ---- */
+            @media (hover: hover) {
+              .feature-card-hover {
+                transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+                            box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+                            border-color 0.3s ease;
+              }
+              .feature-card-hover:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 12px 40px rgba(0,0,0,0.16), 0 4px 16px rgba(0,0,0,0.08);
+              }
+              .feature-card-hover:hover .card-border {
+                border-color: rgba(249,94,46,0.18);
+              }
+            }
+
+            /* ---- Reduced motion ---- */
             @media (prefers-reduced-motion: reduce) {
-              .enter, .card-enter, .cta-glow { animation: none !important; opacity: 1 !important; transform: none !important; }
+              .enter,
+              .wordmark-enter,
+              .card-enter,
+              .card-scale-enter,
+              .cta-glow,
+              .glow-pulse,
+              .social-proof-enter,
+              .headline-shimmer,
+              .card-float-1, .card-float-2, .card-float-3,
+              .card-float-4, .card-float-5, .card-float-6 {
+                animation: none !important;
+                opacity: 1 !important;
+                transform: none !important;
+              }
+              .people-underline::after {
+                animation: none !important;
+                opacity: 1 !important;
+                transform: scaleX(1) !important;
+              }
             }
           `,
         }}
       />
 
-      {/* ── Animated gradient mesh ── */}
-      <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
-        <div
-          className="absolute w-[600px] h-[600px] md:w-[800px] md:h-[800px] rounded-full opacity-[0.12]"
-          style={{
-            background: "radial-gradient(circle, #F95E2E 0%, transparent 70%)",
-            top: "-10%",
-            left: "-5%",
-            filter: "blur(80px)",
-            animation: "blob1 18s ease-in-out infinite",
-          }}
-        />
-        <div
-          className="absolute w-[500px] h-[500px] md:w-[700px] md:h-[700px] rounded-full opacity-[0.08]"
-          style={{
-            background: "radial-gradient(circle, #FF7A45 0%, transparent 70%)",
-            top: "20%",
-            right: "-10%",
-            filter: "blur(100px)",
-            animation: "blob2 22s ease-in-out infinite",
-          }}
-        />
-        <div
-          className="absolute w-[500px] h-[500px] md:w-[600px] md:h-[600px] rounded-full opacity-[0.06]"
-          style={{
-            background: "radial-gradient(circle, #FFAA5C 0%, transparent 70%)",
-            bottom: "-5%",
-            left: "30%",
-            filter: "blur(90px)",
-            animation: "blob3 20s ease-in-out infinite",
-          }}
-        />
-        <div
-          className="absolute inset-0"
-          style={{
-            background:
-              "radial-gradient(ellipse 100% 50% at 50% 0%, rgba(249,94,46,0.06) 0%, transparent 60%)",
-          }}
-        />
-      </div>
+      {/* ── Animated gradient mesh (with parallax) ── */}
+      <ParallaxMesh>
+        <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
+          <div
+            className="absolute w-[600px] h-[600px] md:w-[800px] md:h-[800px] rounded-full opacity-[0.12]"
+            style={{
+              background: "radial-gradient(circle, #F95E2E 0%, transparent 70%)",
+              top: "-10%",
+              left: "-5%",
+              filter: "blur(80px)",
+              animation: "blob1 18s ease-in-out infinite",
+              willChange: "transform",
+            }}
+          />
+          <div
+            className="absolute w-[500px] h-[500px] md:w-[700px] md:h-[700px] rounded-full opacity-[0.08]"
+            style={{
+              background: "radial-gradient(circle, #FF7A45 0%, transparent 70%)",
+              top: "20%",
+              right: "-10%",
+              filter: "blur(100px)",
+              animation: "blob2 22s ease-in-out infinite",
+              willChange: "transform",
+            }}
+          />
+          <div
+            className="absolute w-[500px] h-[500px] md:w-[600px] md:h-[600px] rounded-full opacity-[0.06]"
+            style={{
+              background: "radial-gradient(circle, #FFAA5C 0%, transparent 70%)",
+              bottom: "-5%",
+              left: "30%",
+              filter: "blur(90px)",
+              animation: "blob3 20s ease-in-out infinite",
+              willChange: "transform",
+            }}
+          />
+          {/* Top gradient veil */}
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                "radial-gradient(ellipse 100% 50% at 50% 0%, rgba(249,94,46,0.06) 0%, transparent 60%)",
+            }}
+          />
+          {/* Subtle vignette for depth */}
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                "radial-gradient(ellipse 70% 70% at 50% 50%, transparent 0%, rgba(27,28,31,0.4) 100%)",
+            }}
+          />
+        </div>
+      </ParallaxMesh>
 
       {/* ── Content ── */}
       <div className="relative z-10 flex flex-col items-center text-center px-4 sm:px-6 w-full max-w-6xl mx-auto">
         {/* Wordmark */}
-        <div className="enter enter-d1">
-          <span className="font-display font-extrabold text-3xl md:text-4xl tracking-tight text-white">
+        <div className="wordmark-enter">
+          <span className="font-display font-extrabold text-3xl md:text-4xl tracking-[0.02em] text-white">
             kith
           </span>
         </div>
 
         {/* Headline */}
-        <h1 className="enter enter-d2 font-display font-extrabold text-4xl sm:text-5xl md:text-6xl leading-[1.08] tracking-tight text-white mt-4 md:mt-5">
+        <h1 className="enter enter-d2 font-display font-extrabold text-[2rem] sm:text-5xl md:text-6xl leading-[1.08] tracking-tight text-white mt-4 md:mt-5 headline-shimmer">
           Run with your{" "}
-          <span className="text-[#F95E2E]">people.</span>
+          <span className="text-[#F95E2E] people-underline">people.</span>
         </h1>
 
         {/* Subline */}
@@ -131,93 +316,99 @@ export default function LandingPage() {
           Plan a run. Rally your crew. Show up together.
         </p>
 
+        {/* Social proof */}
+        <p className="social-proof-enter font-body text-[11px] sm:text-xs text-white/25 mt-2.5 tracking-wide">
+          Join runners who show up together
+        </p>
+
         {/* CTAs */}
-        <div className="enter enter-d4 flex items-center gap-3 mt-6 md:mt-7">
+        <div className="enter enter-d4 flex items-center gap-3 mt-5 md:mt-6">
           <Link
             href="/signup"
-            className="cta-glow inline-flex items-center justify-center font-body font-medium text-sm sm:text-base text-white bg-[#F95E2E] rounded-full px-7 py-3 min-h-[44px] sm:min-h-[48px] transition-all duration-200 hover:brightness-110 hover:-translate-y-[1px] active:scale-[0.97]"
+            className="cta-glow inline-flex items-center justify-center font-body font-semibold text-sm sm:text-base text-white rounded-full px-8 py-3 min-h-[48px] sm:min-h-[50px] transition-all duration-200 hover:brightness-110 hover:-translate-y-[1px] active:scale-[0.97]"
             style={{
               backgroundImage:
-                "linear-gradient(180deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0) 50%, rgba(0,0,0,0.04) 100%)",
+                "linear-gradient(135deg, #F95E2E 0%, #FF7A45 50%, #F95E2E 100%)",
+              backgroundSize: "200% 200%",
             }}
           >
             Get started
           </Link>
           <Link
             href="/login"
-            className="inline-flex items-center justify-center font-body font-medium text-sm sm:text-base text-white/80 border border-white/20 rounded-full px-7 py-3 min-h-[44px] sm:min-h-[48px] transition-all duration-200 hover:border-white/40 hover:text-white hover:-translate-y-[0.5px] active:scale-[0.97]"
+            className="inline-flex items-center justify-center font-body font-medium text-sm sm:text-base text-white/70 border border-white/[0.12] rounded-full px-8 py-3 min-h-[48px] sm:min-h-[50px] transition-all duration-300 hover:border-white/30 hover:text-white/90 hover:bg-white/[0.04] hover:-translate-y-[0.5px] active:scale-[0.97]"
           >
             Sign in
           </Link>
         </div>
 
         {/* ── Feature collage ── */}
-        <div className="mt-7 md:mt-9 w-full">
-          {/* Mobile: 2×2 grid */}
+        <div className="mt-6 md:mt-8 w-full">
+          {/* Mobile: 2x2 grid with staggered scale-up entrance */}
           <div className="grid grid-cols-2 gap-2.5 md:hidden max-w-[340px] mx-auto">
-            <div className="card-enter card-d1">
+            <div className="card-scale-enter card-d1">
               <FeatureCard label="Rally your crew" featured>
                 <RunCardMini />
               </FeatureCard>
             </div>
-            <div className="card-enter card-d2">
+            <div className="card-scale-enter card-d2">
               <FeatureCard label="Earn badges">
                 <BadgesMini />
               </FeatureCard>
             </div>
-            <div className="card-enter card-d3">
+            <div className="card-scale-enter card-d3">
               <FeatureCard label="Set your pace">
                 <PaceMini />
               </FeatureCard>
             </div>
-            <div className="card-enter card-d4">
+            <div className="card-scale-enter card-d4">
               <FeatureCard label="Build your crew">
                 <CrewMini />
               </FeatureCard>
             </div>
           </div>
 
-          {/* Desktop: 3×2 collage with transforms */}
+          {/* Desktop: 3x2 collage with transforms, float, and hover */}
           <div className="hidden md:grid md:grid-cols-3 gap-3 lg:gap-4 max-w-[740px] lg:max-w-[860px] mx-auto py-1">
-            <div className="rotate-[-2deg] translate-y-[6px]">
+            <div className="rotate-[-2deg] translate-y-[6px] card-float-1">
               <div className="card-enter card-d1">
                 <FeatureCard label="Set your pace">
                   <PaceMini />
                 </FeatureCard>
               </div>
             </div>
-            <div className="translate-y-[-2px]">
+            <div className="translate-y-[-2px] card-float-2">
               <div className="card-enter card-d2">
                 <FeatureCard label="Rally your crew" featured>
                   <RunCardMini />
                 </FeatureCard>
               </div>
             </div>
-            <div className="rotate-[2deg] translate-y-[8px]">
+            <div className="rotate-[2deg] translate-y-[8px] card-float-3">
               <div className="card-enter card-d3">
                 <FeatureCard label="Earn badges">
                   <BadgesMini />
                 </FeatureCard>
               </div>
             </div>
-            <div className="rotate-[-1deg] translate-y-[-6px]">
+            <div className="rotate-[-1deg] translate-y-[-6px] card-float-4">
               <div className="card-enter card-d4">
                 <FeatureCard label="Build your crew">
                   <CrewMini />
                 </FeatureCard>
               </div>
             </div>
-            <div className="rotate-[1deg] translate-y-[-10px]">
+            <div className="rotate-[1deg] translate-y-[-10px] card-float-5">
               <div className="card-enter card-d5">
                 <FeatureCard label="Runs near you">
                   <MapMini />
                 </FeatureCard>
               </div>
             </div>
-            <div className="rotate-[1.5deg] translate-y-[-4px]">
+            <div className="rotate-[1.5deg] translate-y-[-4px] card-float-6">
               <div className="card-enter card-d6">
-                <FeatureCard label="Plan every split">
-                  <IntervalsMini />
+                <FeatureCard label="Run clubs">
+                  <RunClubsMini />
                 </FeatureCard>
               </div>
             </div>
@@ -243,23 +434,23 @@ function FeatureCard({
 }) {
   return (
     <div className="flex flex-col items-center">
-      <div className="relative w-full">
+      <div className="relative w-full feature-card-hover">
         {/* Glow behind card */}
         <div
-          className="absolute -inset-3 rounded-[20px] pointer-events-none"
+          className={`absolute -inset-3 rounded-[20px] pointer-events-none ${featured ? "glow-pulse" : ""}`}
           style={{
             background: featured
-              ? "radial-gradient(circle, rgba(249,94,46,0.08) 0%, transparent 70%)"
+              ? "radial-gradient(circle, rgba(249,94,46,0.1) 0%, transparent 70%)"
               : "radial-gradient(circle, rgba(249,94,46,0.04) 0%, transparent 70%)",
             filter: "blur(16px)",
           }}
           aria-hidden="true"
         />
         <div
-          className={`relative w-full bg-white/[0.97] backdrop-blur-sm rounded-2xl overflow-hidden ${
+          className={`card-border relative w-full bg-white/[0.97] backdrop-blur-sm rounded-2xl overflow-hidden transition-[border-color] duration-300 ${
             featured
-              ? "shadow-[0_8px_40px_rgba(249,94,46,0.15),0_2px_12px_rgba(0,0,0,0.08)] ring-1 ring-[#F95E2E]/20"
-              : "shadow-[0_8px_32px_rgba(0,0,0,0.12)] ring-1 ring-white/10"
+              ? "shadow-[0_8px_40px_rgba(249,94,46,0.15),0_2px_12px_rgba(0,0,0,0.08)] border border-[#F95E2E]/20"
+              : "shadow-[0_8px_32px_rgba(0,0,0,0.12)] border border-white/[0.06]"
           }`}
         >
           {children}
@@ -643,6 +834,54 @@ function MapMini() {
           10km &middot; Tomorrow 6am
         </p>
         <div className="absolute -bottom-[3px] left-2.5 w-1.5 h-1.5 bg-white rotate-45 shadow-sm" />
+      </div>
+    </div>
+  );
+}
+
+function RunClubsMini() {
+  const clubs = [
+    { name: "Dubai Creek Striders", color: "from-blue-600 to-blue-400", initials: "DC", members: "128" },
+    { name: "Safa Park Runners", color: "from-[#F95E2E] to-[#FF8F6B]", initials: "SP", members: "86" },
+    { name: "JLT Run Crew", color: "from-emerald-600 to-emerald-400", initials: "JL", members: "64" },
+  ];
+
+  return (
+    <div className="p-2.5 md:p-3 space-y-1.5">
+      <div className="flex items-center justify-between">
+        <span className="font-body text-[7px] md:text-[8px] text-[#8A8F99] uppercase tracking-wider">
+          Run Clubs
+        </span>
+        <span className="font-body text-[7px] md:text-[8px] text-[#F95E2E] font-medium">
+          Explore
+        </span>
+      </div>
+      <div className="space-y-1">
+        {clubs.map((club) => (
+          <div
+            key={club.name}
+            className="flex items-center gap-1.5 bg-white rounded-lg p-1.5 border border-[#BFCCD9]/30 shadow-[0_1px_2px_rgba(0,0,0,0.03)]"
+          >
+            <div
+              className={`w-5 h-5 rounded-md bg-gradient-to-br ${club.color} flex items-center justify-center shrink-0`}
+            >
+              <span className="text-white text-[5px] font-bold font-display">
+                {club.initials}
+              </span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-body text-[7px] md:text-[8px] font-medium text-[#2D2D2D] truncate">
+                {club.name}
+              </p>
+              <p className="font-body text-[5px] md:text-[6px] text-[#8A8F99]">
+                {club.members} runners
+              </p>
+            </div>
+            <div className="bg-[#F95E2E]/10 text-[#F95E2E] text-[5px] md:text-[6px] font-body font-medium px-1.5 py-0.5 rounded-full shrink-0">
+              Join
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

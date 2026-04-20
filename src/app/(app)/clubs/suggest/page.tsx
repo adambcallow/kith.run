@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
@@ -12,35 +12,13 @@ export default function SuggestClubPage() {
   const router = useRouter();
   const supabase = createClient();
 
-  const [userId, setUserId] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const [name, setName] = useState("");
-  const [city, setCity] = useState("");
   const [instagram, setInstagram] = useState("");
   const [description, setDescription] = useState("");
-
-  useEffect(() => {
-    async function loadUser() {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (!user) {
-        router.replace("/login");
-        return;
-      }
-
-      setUserId(user.id);
-      setLoading(false);
-    }
-
-    loadUser();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -53,6 +31,15 @@ export default function SuggestClubPage() {
 
     setSubmitting(true);
 
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      router.replace("/login");
+      return;
+    }
+
     const slug = name
       .trim()
       .toLowerCase()
@@ -62,11 +49,10 @@ export default function SuggestClubPage() {
     const { error: insertError } = await supabase.from("run_clubs").insert({
       name: name.trim(),
       slug,
-      city: city.trim() || null,
       instagram: instagram.trim().replace(/^@/, "") || null,
       description: description.trim() || null,
       status: "pending",
-      suggested_by: userId,
+      suggested_by: user.id,
     });
 
     setSubmitting(false);
@@ -77,14 +63,6 @@ export default function SuggestClubPage() {
     }
 
     setSubmitted(true);
-  }
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <span className="h-8 w-8 animate-spin rounded-full border-[3px] border-kith-orange border-t-transparent" />
-      </div>
-    );
   }
 
   if (submitted) {
@@ -154,15 +132,8 @@ export default function SuggestClubPage() {
           label="Club name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="e.g. Dubai Creek Striders"
+          placeholder="Hartland Harriers"
           required
-        />
-
-        <Input
-          label="City"
-          value={city}
-          onChange={(e) => setCity(e.target.value)}
-          placeholder="e.g. Dubai"
         />
 
         <Input
@@ -193,13 +164,13 @@ export default function SuggestClubPage() {
             htmlFor="description"
             className="text-sm font-body font-medium text-kith-text"
           >
-            Tell us about this club
+            About this club
           </label>
           <textarea
             id="description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="What makes this club special? When and where do they run?"
+            placeholder="What makes this club special?"
             rows={4}
             maxLength={500}
             className="w-full rounded-input border border-kith-gray-light bg-white py-3 px-4 font-body text-base text-kith-text placeholder:text-kith-muted focus:outline-none focus:ring-2 focus:ring-kith-orange/30 focus:border-kith-orange transition-all duration-200 resize-none leading-relaxed"
