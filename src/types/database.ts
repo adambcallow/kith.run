@@ -202,6 +202,75 @@ export type Database = {
         };
         Relationships: [];
       };
+      run_clubs: {
+        Row: {
+          id: string;
+          name: string;
+          slug: string;
+          city: string | null;
+          description: string | null;
+          logo_url: string | null;
+          brand: string | null;
+          instagram: string | null;
+          status: "pending" | "approved" | "rejected";
+          suggested_by: string | null;
+          approved_by: string | null;
+          created_at: string;
+          approved_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          slug: string;
+          city?: string | null;
+          description?: string | null;
+          logo_url?: string | null;
+          brand?: string | null;
+          instagram?: string | null;
+          status?: "pending" | "approved" | "rejected";
+          suggested_by?: string | null;
+          approved_by?: string | null;
+          created_at?: string;
+          approved_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          slug?: string;
+          city?: string | null;
+          description?: string | null;
+          logo_url?: string | null;
+          brand?: string | null;
+          instagram?: string | null;
+          status?: "pending" | "approved" | "rejected";
+          suggested_by?: string | null;
+          approved_by?: string | null;
+          created_at?: string;
+          approved_at?: string | null;
+        };
+        Relationships: [];
+      };
+      run_club_members: {
+        Row: {
+          id: string;
+          club_id: string;
+          user_id: string;
+          joined_at: string;
+        };
+        Insert: {
+          id?: string;
+          club_id: string;
+          user_id: string;
+          joined_at?: string;
+        };
+        Update: {
+          id?: string;
+          club_id?: string;
+          user_id?: string;
+          joined_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;
@@ -216,3 +285,5 @@ export type RunParticipant = Database["public"]["Tables"]["run_participants"]["R
 export type Friendship = Database["public"]["Tables"]["friendships"]["Row"];
 export type Reaction = Database["public"]["Tables"]["reactions"]["Row"];
 export type Notification = Database["public"]["Tables"]["notifications"]["Row"];
+export type RunClub = Database["public"]["Tables"]["run_clubs"]["Row"];
+export type RunClubMember = Database["public"]["Tables"]["run_club_members"]["Row"];

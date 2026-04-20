@@ -41,6 +41,7 @@ export default async function UserProfilePage({
     { data: createdRunsForDistance },
     { data: joinedParticipants },
     { data: upcomingRuns },
+    { data: clubMemberships },
   ] = await Promise.all([
     fetchBadgeStats(supabase, profile.id),
     supabase
@@ -74,6 +75,11 @@ export default async function UserProfilePage({
       .eq("status", "upcoming")
       .order("scheduled_at", { ascending: true })
       .limit(6),
+    // Run clubs
+    supabase
+      .from("run_club_members")
+      .select("club_id, run_clubs!club_id(id, name, logo_url, status)")
+      .eq("user_id", profile.id),
   ]);
 
   // Total distance: created + joined
@@ -95,6 +101,22 @@ export default async function UserProfilePage({
   }
   const totalDistanceKm =
     Math.round((createdDistance + joinedDistance) * 10) / 10;
+
+  // Clubs — only approved ones
+  const clubs = (clubMemberships ?? [])
+    .map((m) => {
+      const club = (m as Record<string, unknown>).run_clubs as {
+        id: string;
+        name: string;
+        logo_url: string | null;
+        status: string;
+      } | null;
+      return club;
+    })
+    .filter(
+      (club): club is { id: string; name: string; logo_url: string | null; status: string } =>
+        club !== null && club.status === "approved"
+    );
 
   // Friendship status
   let friendStatus: "none" | "pending" | "accepted" = "none";
@@ -169,6 +191,7 @@ export default async function UserProfilePage({
         joinedCount={joinedCount ?? 0}
         crewSize={crewSize ?? 0}
         badge={crewBadge}
+        clubs={clubs}
       />
 
       {/* Member since */}

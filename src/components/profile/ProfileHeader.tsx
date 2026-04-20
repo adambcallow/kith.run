@@ -26,6 +26,7 @@ interface ProfileHeaderProps {
   joinedCount: number;
   crewSize: number;
   badge?: React.ReactNode;
+  clubs?: { id: string; name: string; logo_url: string | null }[];
 }
 
 export function ProfileHeader({
@@ -34,6 +35,7 @@ export function ProfileHeader({
   joinedCount,
   crewSize,
   badge,
+  clubs,
 }: ProfileHeaderProps) {
   const pbDistanceLabel = profile.pace_max ? PB_DISTANCE_LABELS[profile.pace_max] : null;
   const pbTime = profile.pace_min ? formatPbTime(profile.pace_min) : null;
@@ -92,6 +94,33 @@ export function ProfileHeader({
         <p className="font-body text-sm text-kith-text text-center max-w-[320px] leading-relaxed">
           {profile.bio}
         </p>
+      )}
+
+      {/* Run clubs */}
+      {clubs && clubs.length > 0 && (
+        <div className="flex gap-2 overflow-x-auto scrollbar-hide -mx-1 px-1 pb-1">
+          {clubs.map((club) => (
+            <span
+              key={club.id}
+              className="bg-kith-surface border border-kith-gray-light/50 px-3 py-1.5 flex items-center gap-1.5 rounded-pill shrink-0"
+            >
+              {club.logo_url ? (
+                <img
+                  src={club.logo_url}
+                  alt={club.name}
+                  className="w-4 h-4 rounded-full object-cover"
+                />
+              ) : (
+                <span className="w-4 h-4 rounded-full bg-kith-orange/20 text-kith-orange flex items-center justify-center text-[10px] font-bold leading-none">
+                  {club.name.charAt(0).toUpperCase()}
+                </span>
+              )}
+              <span className="text-xs font-body font-medium text-kith-text whitespace-nowrap">
+                {club.name}
+              </span>
+            </span>
+          ))}
+        </div>
       )}
 
       {/* Stats container */}

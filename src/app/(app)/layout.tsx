@@ -42,7 +42,6 @@ export default async function AppLayout({
       />
       <main className="app-container py-4">{children}</main>
       <BottomNav
-        unreadCount={unreadCount ?? 0}
         username={profile?.username}
         avatarUrl={profile?.avatar_url}
         fullName={profile?.full_name}

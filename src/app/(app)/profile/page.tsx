@@ -85,6 +85,7 @@ export default async function MyProfilePage() {
     { data: recentRunDates },
     { data: upcomingRuns },
     { data: completedRuns },
+    { data: clubMemberships },
   ] = await Promise.all([
     fetchBadgeStats(supabase, user.id),
     supabase
@@ -136,6 +137,11 @@ export default async function MyProfilePage() {
       .eq("status", "completed")
       .order("scheduled_at", { ascending: false })
       .limit(10),
+    // Run clubs
+    supabase
+      .from("run_club_members")
+      .select("club_id, run_clubs!club_id(id, name, logo_url, status)")
+      .eq("user_id", user.id),
   ]);
 
   // Total distance: created + joined (no extra query — data already joined)
@@ -158,6 +164,24 @@ export default async function MyProfilePage() {
     (recentRunDates ?? []).map((r) => r.scheduled_at)
   );
 
+  // Clubs — only approved ones
+  const clubs = (clubMemberships ?? [])
+    .map((m) => {
+      const club = (m as Record<string, unknown>).run_clubs as {
+        id: string;
+        name: string;
+        logo_url: string | null;
+        status: string;
+      } | null;
+      return club;
+    })
+    .filter(
+      (club): club is { id: string; name: string; logo_url: string | null; status: string } =>
+        club !== null && club.status === "approved"
+    );
+
+  const isAdmin = user.email === "hello@adamcallow.com";
+
   return (
     <div className="space-y-6">
       <ProfileHeader
@@ -165,6 +189,7 @@ export default async function MyProfilePage() {
         runCount={runCount ?? 0}
         joinedCount={joinedCount ?? 0}
         crewSize={crewSize ?? 0}
+        clubs={clubs}
       />
 
       {/* Member since */}
@@ -177,6 +202,14 @@ export default async function MyProfilePage() {
           <Button variant="secondary">Edit profile</Button>
         </Link>
         <SignOutButton />
+        {isAdmin && (
+          <Link
+            href="/admin"
+            className="bg-kith-surface text-kith-text text-sm font-body font-medium rounded-pill px-4 py-2.5 min-h-[44px] border border-kith-gray-light hover:bg-kith-gray-light/50 transition-colors inline-flex items-center"
+          >
+            Admin
+          </Link>
+        )}
       </div>
 
       {/* Rich stats */}
