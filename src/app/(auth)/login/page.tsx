@@ -106,6 +106,15 @@ export default function LoginPage() {
             <Button type="submit" fullWidth disabled={loading} loading={loading}>
               {loading ? "Signing in..." : "Sign in"}
             </Button>
+
+            <div className="text-right">
+              <Link
+                href="/forgot-password"
+                className="font-body text-sm text-kith-muted hover:text-kith-orange transition-colors"
+              >
+                Forgot password?
+              </Link>
+            </div>
           </form>
 
           <p className="text-center font-body text-sm text-kith-muted">
