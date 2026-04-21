@@ -72,7 +72,7 @@ export function ClubCard({
 
   return (
     <div className="bg-white rounded-card p-4 border border-kith-gray-light shadow-card space-y-3">
-      {/* Top row: Logo + info */}
+      {/* Top row: Logo + info + Instagram icon */}
       <div className="flex items-start gap-3">
         {/* Logo / initial */}
         <div className="shrink-0">
@@ -126,6 +126,33 @@ export function ClubCard({
             )}
           </div>
         </div>
+
+        {/* Instagram icon — top right */}
+        {igHandle && (
+          <a
+            href={`https://instagram.com/${igHandle}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="shrink-0 w-9 h-9 rounded-full flex items-center justify-center bg-[#E1306C]/[0.08] hover:bg-[#E1306C]/[0.15] transition-colors"
+            aria-label={`Follow ${club.name} on Instagram`}
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#E1306C"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+              <path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z" />
+              <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+            </svg>
+          </a>
+        )}
       </div>
 
       {/* Club description */}
@@ -133,35 +160,6 @@ export function ClubCard({
         <p className="font-body text-xs text-kith-muted line-clamp-2 leading-relaxed">
           {club.description}
         </p>
-      )}
-
-      {/* Instagram link */}
-      {igHandle && (
-        <a
-          href={`https://instagram.com/${igHandle}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={(e) => e.stopPropagation()}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-pill bg-[#E1306C]/[0.08] text-[#E1306C] hover:bg-[#E1306C]/[0.14] transition-colors"
-        >
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
-            <path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z" />
-            <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
-          </svg>
-          <span className="font-body text-[11px] font-semibold">
-            Follow @{igHandle} on Instagram
-          </span>
-        </a>
       )}
 
       {/* Member avatars + count row */}
@@ -202,43 +200,52 @@ export function ClubCard({
         )}
       </div>
 
-      {/* Member / I'm a member button — full width */}
-      <button
-        onClick={handleToggle}
-        disabled={loading}
-        className={clsx(
-          "w-full py-2.5 rounded-pill text-sm font-body font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kith-orange/30",
-          joined
-            ? "border-2 border-green-500 text-green-600 bg-green-50 hover:bg-green-100"
-            : "bg-kith-orange text-white hover:shadow-lg hover:shadow-kith-orange/25 hover:-translate-y-[0.5px]",
-          loading ? "opacity-50 pointer-events-none" : ""
-        )}
-      >
-        {loading ? (
-          <span className="inline-flex items-center gap-2">
-            <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
-            {joined ? "Removing..." : "Adding..."}
-          </span>
-        ) : joined ? (
-          <span className="inline-flex items-center gap-1.5">
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <polyline points="20 6 9 17 4 12" />
+      {/* Action buttons row */}
+      <div className="flex gap-2">
+        <button
+          onClick={handleToggle}
+          disabled={loading}
+          className={clsx(
+            "flex-1 py-2.5 rounded-pill text-sm font-body font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kith-orange/30",
+            joined
+              ? "border-2 border-green-500 text-green-600 bg-green-50 hover:bg-green-100"
+              : "bg-kith-orange text-white hover:shadow-lg hover:shadow-kith-orange/25 hover:-translate-y-[0.5px]",
+            loading ? "opacity-50 pointer-events-none" : ""
+          )}
+        >
+          {loading ? (
+            <span className="inline-flex items-center justify-center gap-2">
+              <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
+              {joined ? "Removing..." : "Adding..."}
+            </span>
+          ) : joined ? (
+            <span className="inline-flex items-center justify-center gap-1.5">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              Member
+            </span>
+          ) : (
+            "I\u2019m a member"
+          )}
+        </button>
+        {igHandle && (
+          <a
+            href={`https://instagram.com/${igHandle}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-pill border-2 border-[#E1306C]/20 text-[#E1306C] bg-[#E1306C]/[0.04] hover:bg-[#E1306C]/[0.1] transition-colors text-sm font-body font-semibold"
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+              <path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z" />
+              <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
             </svg>
-            Member
-          </span>
-        ) : (
-          "I'm a member"
+            Follow
+          </a>
         )}
-      </button>
+      </div>
     </div>
   );
 }
