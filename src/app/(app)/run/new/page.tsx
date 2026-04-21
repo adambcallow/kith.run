@@ -425,6 +425,11 @@ export default function NewRunPage() {
             Preview
           </p>
           <div className="space-y-2">
+            {title.trim() && (
+              <p className="font-display font-semibold text-base text-kith-text">
+                {title.trim()}
+              </p>
+            )}
             <div className="flex items-center gap-2">
               <span className="text-sm" aria-hidden="true">
                 {"\uD83D\uDCCD"}
