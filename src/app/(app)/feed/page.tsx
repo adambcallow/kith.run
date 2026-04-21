@@ -21,11 +21,25 @@ export default async function FeedPage() {
     Date.now() - 48 * 60 * 60 * 1000
   ).toISOString();
 
-  // Fetch all relevant runs in a single query — live, upcoming, or recently completed
+  // Get crew member IDs so we can show their crew-only runs
+  const { data: friendships } = await supabase
+    .from("friendships")
+    .select("user_a, user_b")
+    .eq("status", "accepted")
+    .or(`user_a.eq.${user!.id},user_b.eq.${user!.id}`);
+
+  const crewIds = (friendships ?? []).map((f) =>
+    f.user_a === user!.id ? f.user_b : f.user_a
+  );
+
+  // Fetch runs: public, own, OR crew-only from friends
+  // Supabase .or() can't handle IN + nested conditions well, so fetch broadly
+  // then filter. We fetch all runs from the user + crew + public.
+  const creatorFilter = [user!.id, ...crewIds];
   const { data: runs } = await supabase
     .from("runs")
     .select("id, creator_id, title, start_place, start_lat, start_lng, scheduled_at, distance_km, pace_min_target, pace_max_target, note, visibility, is_live, status, expires_at, strava_activity_id, route_geojson, created_at, profiles!creator_id(id, username, full_name, avatar_url)")
-    .or(`visibility.eq.public,creator_id.eq.${user!.id}`)
+    .or(`visibility.eq.public,creator_id.in.(${creatorFilter.join(",")})`)
     .or(
       `is_live.eq.true,status.eq.upcoming,and(status.eq.completed,scheduled_at.gte.${fortyEightHoursAgo})`
     )
