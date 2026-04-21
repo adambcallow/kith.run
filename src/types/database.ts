@@ -13,6 +13,7 @@ export type Database = {
           pace_max: number | null;
           strava_id: string | null;
           garmin_id: string | null;
+          instagram: string | null;
           personal_bests: PersonalBest[] | null;
           created_at: string;
         };
@@ -27,6 +28,7 @@ export type Database = {
           pace_max?: number | null;
           strava_id?: string | null;
           garmin_id?: string | null;
+          instagram?: string | null;
           personal_bests?: PersonalBest[] | null;
           created_at?: string;
         };
@@ -41,6 +43,7 @@ export type Database = {
           pace_max?: number | null;
           strava_id?: string | null;
           garmin_id?: string | null;
+          instagram?: string | null;
           personal_bests?: PersonalBest[] | null;
           created_at?: string;
         };

@@ -65,12 +65,12 @@ export default async function NotificationsPage() {
     .limit(50);
 
   // Mark as read — fire and forget, don't block page render
-  supabase
+  void supabase
     .from("notifications")
     .update({ read: true })
     .eq("user_id", user.id)
     .eq("read", false)
-    .then(() => {});
+    .then(() => {}, () => {});
 
   const grouped = groupNotifications(notifications ?? []);
 

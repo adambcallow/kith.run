@@ -191,6 +191,7 @@ export default async function RunDetailPage({
               <img
                 src={runClub.logo_url}
                 alt={runClub.name}
+                loading="lazy"
                 className="w-8 h-8 rounded-full object-cover shrink-0"
               />
             ) : (

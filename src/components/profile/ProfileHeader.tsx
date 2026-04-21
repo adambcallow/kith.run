@@ -113,20 +113,39 @@ export function ProfileHeader({
         </div>
       )}
 
-      {/* Strava link */}
-      {profile.strava_id && (
-        <a
-          href={profile.strava_id}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-pill bg-[#FC4C02]/10 hover:bg-[#FC4C02]/15 transition-colors"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-            <path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066l-2.084 4.116z" fill="#FC4C02" />
-            <path d="M10.233 13.828L7.2 7.757 4.168 13.828H7.2l3.033 0zM7.2 0L0 14.396h4.168L7.2 7.757l3.033 6.639h4.168L7.2 0z" fill="#FC4C02" />
-          </svg>
-          <span className="font-body text-xs font-medium text-[#FC4C02]">Follow on Strava</span>
-        </a>
+      {/* Social links */}
+      {(profile.strava_id || profile.instagram) && (
+        <div className="flex flex-wrap justify-center gap-2">
+          {profile.strava_id && (
+            <a
+              href={profile.strava_id}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-pill bg-[#FC4C02]/10 hover:bg-[#FC4C02]/15 transition-colors"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066l-2.084 4.116z" fill="#FC4C02" />
+                <path d="M10.233 13.828L7.2 7.757 4.168 13.828H7.2l3.033 0zM7.2 0L0 14.396h4.168L7.2 7.757l3.033 6.639h4.168L7.2 0z" fill="#FC4C02" />
+              </svg>
+              <span className="font-body text-xs font-medium text-[#FC4C02]">Follow on Strava</span>
+            </a>
+          )}
+          {profile.instagram && (
+            <a
+              href={`https://instagram.com/${profile.instagram}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-pill bg-[#E1306C]/10 hover:bg-[#E1306C]/15 transition-colors"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <rect x="2" y="2" width="20" height="20" rx="5" stroke="#E1306C" strokeWidth="2" />
+                <circle cx="12" cy="12" r="5" stroke="#E1306C" strokeWidth="2" />
+                <circle cx="17.5" cy="6.5" r="1.5" fill="#E1306C" />
+              </svg>
+              <span className="font-body text-xs font-medium text-[#E1306C]">@{profile.instagram}</span>
+            </a>
+          )}
+        </div>
       )}
 
       {profile.bio && (

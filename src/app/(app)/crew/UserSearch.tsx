@@ -25,6 +25,7 @@ export function UserSearch({ currentUserId }: UserSearchProps) {
   const [statuses, setStatuses] = useState<Record<string, FriendStatus>>({});
   const [loading, setLoading] = useState(false);
   const [showResults, setShowResults] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -54,6 +55,7 @@ export function UserSearch({ currentUserId }: UserSearchProps) {
     }
 
     setLoading(true);
+    setError(null);
     const timer = setTimeout(async () => {
       try {
         // Search profiles
@@ -94,7 +96,8 @@ export function UserSearch({ currentUserId }: UserSearchProps) {
           setStatuses(statusMap);
         }
       } catch {
-        // Silently handle errors
+        setError("Search failed. Please try again.");
+        setResults([]);
       } finally {
         setLoading(false);
       }
@@ -143,7 +146,13 @@ export function UserSearch({ currentUserId }: UserSearchProps) {
       {/* Results dropdown */}
       {showResults && (
         <div className="absolute left-0 right-0 top-full mt-2 z-20 bg-white rounded-card border border-kith-gray-light shadow-card overflow-hidden">
-          {results.length === 0 && !loading ? (
+          {error ? (
+            <div className="p-4 text-center">
+              <p className="font-body text-sm text-red-500">
+                {error}
+              </p>
+            </div>
+          ) : results.length === 0 && !loading ? (
             <div className="p-4 text-center">
               <p className="font-body text-sm text-kith-muted">
                 No runners found

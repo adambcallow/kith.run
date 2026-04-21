@@ -543,6 +543,7 @@ export default function NewRunPage() {
                       <img
                         src={club.logo_url}
                         alt={club.name}
+                        loading="lazy"
                         className="w-4 h-4 rounded-full object-cover"
                       />
                     ) : (

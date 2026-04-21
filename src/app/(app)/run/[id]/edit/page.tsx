@@ -67,7 +67,7 @@ export default function EditRunPage() {
         .single();
 
       if (!run) {
-        router.push("/feed");
+        setPageLoading(false);
         return;
       }
 
@@ -222,6 +222,26 @@ export default function EditRunPage() {
         <div className="h-12 rounded-input bg-kith-surface animate-pulse" />
         <div className="h-12 rounded-input bg-kith-surface animate-pulse" />
         <div className="h-24 rounded-input bg-kith-surface animate-pulse" />
+      </div>
+    );
+  }
+
+  // Run not found
+  if (!pageLoading && !unauthorized && !location) {
+    return (
+      <div className="pt-2 pb-12 text-center space-y-4">
+        <p className="font-display font-semibold text-base text-kith-text">
+          Run not found
+        </p>
+        <p className="font-body text-sm text-kith-muted">
+          This run may have been deleted or doesn&apos;t exist.
+        </p>
+        <a
+          href="/feed"
+          className="inline-flex items-center justify-center gap-1.5 rounded-pill px-5 py-2.5 text-sm font-body font-medium bg-kith-surface text-kith-text hover:bg-kith-gray-light/50 transition-all duration-200"
+        >
+          Back to feed
+        </a>
       </div>
     );
   }

@@ -29,6 +29,7 @@ export function CompleteRunButton({
   const [selected, setSelected] = useState<number | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleSelect(index: number) {
     if (submitting) return;
@@ -66,6 +67,7 @@ export function CompleteRunButton({
         router.refresh();
       }, 1200);
     } catch {
+      setError("Something went wrong. Try again.");
       setSelected(null);
       setSubmitting(false);
     }
@@ -136,6 +138,7 @@ export function CompleteRunButton({
           </button>
         ))}
       </div>
+      {error && <p className="text-xs text-red-500 font-body text-center">{error}</p>}
     </div>
   );
 }

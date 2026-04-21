@@ -45,6 +45,9 @@ export default function EditProfilePage() {
   // Strava profile URL
   const [stravaUrl, setStravaUrl] = useState("");
 
+  // Instagram handle
+  const [instagram, setInstagram] = useState("");
+
   const [generalError, setGeneralError] = useState<string | null>(null);
 
   const distanceToCode: Record<string, number> = {
@@ -76,7 +79,7 @@ export default function EditProfilePage() {
 
       const { data: profile } = await supabase
         .from("profiles")
-        .select("username, full_name, avatar_url, bio, pace_min, pace_max, strava_id, personal_bests")
+        .select("username, full_name, avatar_url, bio, pace_min, pace_max, strava_id, instagram, personal_bests")
         .eq("id", user.id)
         .single();
 
@@ -86,6 +89,7 @@ export default function EditProfilePage() {
         setBio(profile.bio ?? "");
         setAvatarUrl(profile.avatar_url ?? null);
         setStravaUrl(profile.strava_id ?? "");
+        setInstagram(profile.instagram ?? "");
 
         // Load personal_bests from jsonb column
         const pbs = (profile.personal_bests as PersonalBest[] | null) ?? [];
@@ -152,6 +156,7 @@ export default function EditProfilePage() {
         pace_min: backcompatMin,
         pace_max: backcompatMax,
         strava_id: stravaUrl.trim() || null,
+        instagram: instagram.trim().replace(/^@/, "") || null,
       })
       .eq("id", userId!);
 
@@ -371,6 +376,30 @@ export default function EditProfilePage() {
             value={stravaUrl}
             onChange={(e) => setStravaUrl(e.target.value)}
             placeholder="https://www.strava.com/athletes/..."
+          />
+        </section>
+
+        {/* Instagram */}
+        <section className="bg-kith-surface rounded-card p-5 space-y-3">
+          <div className="flex items-center gap-3">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <rect x="2" y="2" width="20" height="20" rx="5" stroke="#E1306C" strokeWidth="2" />
+              <circle cx="12" cy="12" r="5" stroke="#E1306C" strokeWidth="2" />
+              <circle cx="17.5" cy="6.5" r="1.5" fill="#E1306C" />
+            </svg>
+            <div>
+              <h2 className="font-display font-bold text-sm text-kith-text">
+                Instagram
+              </h2>
+              <p className="font-body text-xs text-kith-muted">
+                Add your Instagram handle so your crew can find you
+              </p>
+            </div>
+          </div>
+          <Input
+            value={instagram}
+            onChange={(e) => setInstagram(e.target.value)}
+            placeholder="@yourusername"
           />
         </section>
 

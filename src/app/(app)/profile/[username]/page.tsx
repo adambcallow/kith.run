@@ -62,10 +62,10 @@ export default async function UserProfilePage({
       .from("runs")
       .select("distance_km")
       .eq("creator_id", profile.id),
-    // Joined run IDs for distance
+    // Joined runs with distance (no extra query needed)
     supabase
       .from("run_participants")
-      .select("run_id")
+      .select("run_id, runs!run_id(distance_km, status)")
       .eq("user_id", profile.id),
     // Upcoming runs
     supabase
@@ -87,18 +87,14 @@ export default async function UserProfilePage({
     (sum, r) => sum + (r.distance_km ?? 0),
     0
   );
-  let joinedDistance = 0;
-  if (joinedParticipants && joinedParticipants.length > 0) {
-    const runIds = joinedParticipants.map((p) => p.run_id);
-    const { data: joinedRunDetails } = await supabase
-      .from("runs")
-      .select("distance_km")
-      .in("id", runIds);
-    joinedDistance = (joinedRunDetails ?? []).reduce(
-      (sum, r) => sum + (r.distance_km ?? 0),
-      0
-    );
-  }
+  const joinedDistance = (joinedParticipants ?? []).reduce(
+    (sum, p) => {
+      const run = (p as Record<string, unknown>).runs as { distance_km: number; status: string } | null;
+      if (!run || run.status !== "completed") return sum;
+      return sum + (run.distance_km ?? 0);
+    },
+    0
+  );
   const totalDistanceKm =
     Math.round((createdDistance + joinedDistance) * 10) / 10;
 

@@ -4,12 +4,11 @@ import { Avatar } from "@/components/ui/Avatar";
 import { Badge } from "@/components/ui/Badge";
 import { JoinButton } from "./JoinButton";
 import { ReactionBar } from "./ReactionBar";
-import { formatPaceRange, formatDistance, formatRelativeRunTime } from "@/lib/utils";
+import { formatPaceRange, formatDistance, formatRelativeRunTime, avatarFallbackColor } from "@/lib/utils";
 import type { Run, Profile, Reaction } from "@/types/database";
 import Link from "next/link";
 import { clsx } from "clsx";
 import { memo } from "react";
-import { avatarFallbackColor } from "@/lib/utils";
 
 interface RunCardProps {
   run: Run;
@@ -78,6 +77,7 @@ export const RunCard = memo(function RunCard({
               <img
                 src={runClub.logo_url}
                 alt={runClub.name}
+                loading="lazy"
                 className="w-3.5 h-3.5 rounded-full object-cover"
               />
             ) : (
