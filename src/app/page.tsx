@@ -755,21 +755,21 @@ function CrewMini() {
       initials: "JR",
       name: "James R.",
       handle: "@jamesr",
-      pace: "5:00\u20136:00",
+      runs: 12,
       color: "from-blue-500 to-blue-400",
     },
     {
       initials: "SK",
       name: "Sarah K.",
       handle: "@sarahk",
-      pace: "4:30\u20135:30",
+      runs: 8,
       color: "from-[#F95E2E] to-[#FF8F6B]",
     },
     {
       initials: "MT",
       name: "Mike T.",
       handle: "@miket",
-      pace: "5:30\u20136:30",
+      runs: 5,
       color: "from-emerald-500 to-emerald-400",
     },
   ];
@@ -805,8 +805,8 @@ function CrewMini() {
                 {m.handle}
               </p>
             </div>
-            <span className="bg-[#F6F7F8] text-[#2D2D2D] text-[5px] md:text-[6px] font-body font-medium px-1.5 py-0.5 rounded-full shrink-0">
-              {m.pace}
+            <span className="bg-[#F6F7F8] text-[#8A8F99] text-[5px] md:text-[6px] font-body font-medium px-1.5 py-0.5 rounded-full shrink-0">
+              {m.runs} runs
             </span>
           </div>
         ))}
