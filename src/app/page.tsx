@@ -204,6 +204,24 @@ export default function LandingPage() {
               animation: fadeIn 1s ease-out 1.4s both;
             }
 
+            /* ---- Mobile card marquee auto-scroll ---- */
+            @keyframes cardMarquee {
+              0%   { transform: translateX(0); }
+              100% { transform: translateX(-50%); }
+            }
+            .card-marquee {
+              animation: cardMarquee 30s linear 2s infinite;
+            }
+            .card-marquee:hover,
+            .card-marquee:active {
+              animation-play-state: paused;
+            }
+            @media (pointer: coarse) {
+              .card-marquee:active {
+                animation-play-state: paused;
+              }
+            }
+
             /* ---- Mobile secondary CTA fade-in ---- */
             .mobile-cta-enter {
               animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 1.6s both;
@@ -231,6 +249,7 @@ export default function LandingPage() {
               .wordmark-enter,
               .card-enter,
               .card-scale-enter,
+              .card-marquee,
               .cta-glow,
               .glow-pulse,
               .social-proof-enter,
@@ -356,39 +375,44 @@ export default function LandingPage() {
 
         {/* ── Feature collage ── */}
         <div className="mt-5 md:mt-10 w-full">
-          {/* Mobile: horizontally scrollable card strip */}
-          <div className="md:hidden -mx-4">
-            <div className="flex gap-3 overflow-x-auto scrollbar-hide px-4 pb-2 snap-x snap-mandatory">
-              <div className="min-w-[200px] max-w-[200px] snap-center shrink-0 card-scale-enter card-d1">
-                <FeatureCard label="Rally your crew" featured>
-                  <RunCardMini />
-                </FeatureCard>
-              </div>
-              <div className="min-w-[200px] max-w-[200px] snap-center shrink-0 card-scale-enter card-d2">
-                <FeatureCard label="Earn badges">
-                  <BadgesMini />
-                </FeatureCard>
-              </div>
-              <div className="min-w-[200px] max-w-[200px] snap-center shrink-0 card-scale-enter card-d3">
-                <FeatureCard label="Set your pace">
-                  <PaceMini />
-                </FeatureCard>
-              </div>
-              <div className="min-w-[200px] max-w-[200px] snap-center shrink-0 card-scale-enter card-d4">
-                <FeatureCard label="Build your crew">
-                  <CrewMini />
-                </FeatureCard>
-              </div>
-              <div className="min-w-[200px] max-w-[200px] snap-center shrink-0 card-scale-enter card-d5">
-                <FeatureCard label="Runs near you">
-                  <MapMini />
-                </FeatureCard>
-              </div>
-              <div className="min-w-[200px] max-w-[200px] snap-center shrink-0 card-scale-enter card-d6">
-                <FeatureCard label="Run clubs">
-                  <RunClubsMini />
-                </FeatureCard>
-              </div>
+          {/* Mobile: auto-scrolling card marquee */}
+          <div className="md:hidden -mx-4 overflow-hidden">
+            <div className="card-marquee flex gap-3 pb-2 w-max">
+              {/* First set of cards */}
+              {[0, 1].map((setIndex) => (
+                <div key={setIndex} className="flex gap-3 shrink-0 pl-4">
+                  <div className="min-w-[200px] max-w-[200px] shrink-0 card-scale-enter card-d1">
+                    <FeatureCard label="Rally your crew" featured>
+                      <RunCardMini />
+                    </FeatureCard>
+                  </div>
+                  <div className="min-w-[200px] max-w-[200px] shrink-0 card-scale-enter card-d2">
+                    <FeatureCard label="Earn badges">
+                      <BadgesMini />
+                    </FeatureCard>
+                  </div>
+                  <div className="min-w-[200px] max-w-[200px] shrink-0 card-scale-enter card-d3">
+                    <FeatureCard label="Set your pace">
+                      <PaceMini />
+                    </FeatureCard>
+                  </div>
+                  <div className="min-w-[200px] max-w-[200px] shrink-0 card-scale-enter card-d4">
+                    <FeatureCard label="Build your crew">
+                      <CrewMini />
+                    </FeatureCard>
+                  </div>
+                  <div className="min-w-[200px] max-w-[200px] shrink-0 card-scale-enter card-d5">
+                    <FeatureCard label="Runs near you">
+                      <MapMini />
+                    </FeatureCard>
+                  </div>
+                  <div className="min-w-[200px] max-w-[200px] shrink-0 card-scale-enter card-d6">
+                    <FeatureCard label="Run clubs">
+                      <RunClubsMini />
+                    </FeatureCard>
+                  </div>
+                </div>
+              ))}
             </div>
 
             {/* Feature hints row */}
