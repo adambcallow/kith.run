@@ -101,15 +101,16 @@ export default async function MyProfilePage() {
       .select("*", { count: "exact", head: true })
       .eq("status", "accepted")
       .or(`user_a.eq.${user.id},user_b.eq.${user.id}`),
-    // Distance from created runs
+    // Distance from completed runs only (not upcoming/future)
     supabase
       .from("runs")
       .select("distance_km")
-      .eq("creator_id", user.id),
-    // Joined runs with distance — single query instead of N+1
+      .eq("creator_id", user.id)
+      .eq("status", "completed"),
+    // Joined completed runs with distance
     supabase
       .from("run_participants")
-      .select("run_id, runs!run_id(distance_km)")
+      .select("run_id, runs!run_id(distance_km, status)")
       .eq("user_id", user.id),
     // Last 8 weeks of runs for streak
     supabase
@@ -151,8 +152,9 @@ export default async function MyProfilePage() {
   );
   const joinedDistance = (joinedParticipants ?? []).reduce(
     (sum, p) => {
-      const run = (p as Record<string, unknown>).runs as { distance_km: number } | null;
-      return sum + (run?.distance_km ?? 0);
+      const run = (p as Record<string, unknown>).runs as { distance_km: number; status: string } | null;
+      if (!run || run.status !== "completed") return sum;
+      return sum + (run.distance_km ?? 0);
     },
     0
   );

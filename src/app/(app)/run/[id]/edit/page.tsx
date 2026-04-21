@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
 import { LocationPicker } from "@/components/map/LocationPicker";
 import { RunDateTimePicker } from "@/components/run/RunDateTimePicker";
 import { PaceSlider } from "@/components/run/PaceSlider";
@@ -24,6 +25,7 @@ export default function EditRunPage() {
   const [unauthorized, setUnauthorized] = useState(false);
 
   // Form state
+  const [title, setTitle] = useState("");
   const [location, setLocation] = useState<{
     name: string;
     lat: number;
@@ -76,6 +78,7 @@ export default function EditRunPage() {
       }
 
       // Populate form state from run data
+      setTitle(run.title ?? "");
       setLocation({
         name: run.start_place,
         lat: run.start_lat,
@@ -158,6 +161,7 @@ export default function EditRunPage() {
     const { error: updateError } = await supabase
       .from("runs")
       .update({
+        title: title.trim() || null,
         start_lat: location!.lat,
         start_lng: location!.lng,
         start_place: location!.name,
@@ -317,6 +321,14 @@ export default function EditRunPage() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Title */}
+        <Input
+          label="Run title"
+          placeholder="Saturday morning 10K"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+        />
+
         {/* Location */}
         <LocationPicker
           onSelect={(place) => {

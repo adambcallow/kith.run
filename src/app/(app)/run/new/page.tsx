@@ -4,6 +4,7 @@ import { useState, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
 import { LocationPicker } from "@/components/map/LocationPicker";
 import { RunDateTimePicker } from "@/components/run/RunDateTimePicker";
 import { PaceSlider } from "@/components/run/PaceSlider";
@@ -18,6 +19,7 @@ export default function NewRunPage() {
   const router = useRouter();
   const supabase = createClient();
 
+  const [title, setTitle] = useState("");
   const [location, setLocation] = useState<{
     name: string;
     lat: number;
@@ -79,6 +81,7 @@ export default function NewRunPage() {
 
     const { error: insertError } = await supabase.from("runs").insert({
       creator_id: user.id,
+      title: title.trim() || null,
       start_lat: location!.lat,
       start_lng: location!.lng,
       start_place: location!.name,
@@ -211,6 +214,14 @@ export default function NewRunPage() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Title */}
+        <Input
+          label="Run title"
+          placeholder="Saturday morning 10K"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+        />
+
         {/* Location */}
         <LocationPicker
           onSelect={(place) => {

@@ -13,6 +13,7 @@ import {
 } from "@/lib/utils";
 import { RunDetailActions } from "./RunDetailActions";
 import { DeleteRunButton } from "./DeleteRunButton";
+import { CompleteRunButton } from "./CompleteRunButton";
 
 const RouteMap = dynamic(
   () =>
@@ -62,6 +63,10 @@ export default async function RunDetailPage({
   const isJoined =
     participants?.some((p) => p.user_id === user?.id) ?? false;
   const isCompleted = run.status === "completed";
+  const isCreator = user?.id === run.creator_id;
+  const runTimePassed = new Date(run.scheduled_at) < new Date();
+  const canComplete =
+    run.status === "upcoming" && runTimePassed && (isCreator || isJoined);
 
   // Parse interval data from route_geojson with safe validation
   const rawRoute = run.route_geojson as Record<string, unknown> | null;
@@ -171,6 +176,13 @@ export default async function RunDetailPage({
             {run.visibility === "crew" ? "Crew" : "Public"}
           </Badge>
         </div>
+
+        {/* Run title */}
+        {run.title && (
+          <h2 className="font-display font-bold text-lg text-kith-text">
+            {run.title}
+          </h2>
+        )}
 
         {/* Edit / Cancel buttons — only for the creator on non-completed runs */}
         {user?.id === run.creator_id && !isCompleted && (
@@ -385,6 +397,14 @@ export default async function RunDetailPage({
               No one has joined yet. Be the first!
             </p>
           </div>
+        )}
+
+        {/* Complete / rate the run */}
+        {canComplete && user && (
+          <CompleteRunButton
+            runId={run.id}
+            isCreator={!!isCreator}
+          />
         )}
 
         {/* Completed run — reaction bar */}

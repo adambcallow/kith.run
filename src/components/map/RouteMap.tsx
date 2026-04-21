@@ -87,7 +87,7 @@ export function RouteMap({ lat, lng, routeGeojson, className }: RouteMapProps) {
       className={className ?? "w-full h-48 rounded-card overflow-hidden"}
       style={{ zIndex: 0 }}
     >
-      <TileLayer url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png" />
+      <TileLayer url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png" />
 
       <ScrollZoomControl />
 

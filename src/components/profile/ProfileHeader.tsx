@@ -63,8 +63,8 @@ export function ProfileHeader({
   return (
     <div className="flex flex-col items-center gap-4">
       {/* Avatar with orange ring */}
-      <div className="rounded-full p-[3px] bg-gradient-to-br from-kith-orange to-kith-orange/60">
-        <div className="rounded-full p-[2px] bg-white">
+      <div className="rounded-full p-[3px]" style={{ background: "conic-gradient(from 45deg, #F95E2E, #FF8F6B, #F95E2E)" }}>
+        <div className="rounded-full p-[2.5px] bg-white">
           <Avatar
             src={profile.avatar_url}
             username={profile.username}

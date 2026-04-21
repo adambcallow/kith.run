@@ -61,6 +61,13 @@ export const RunCard = memo(function RunCard({
           )}
         </div>
 
+        {/* Title */}
+        {run.title && (
+          <p className="font-display font-semibold text-base text-kith-text">
+            {run.title}
+          </p>
+        )}
+
         {/* Location with pin icon */}
         <div className="flex items-center gap-1.5 text-kith-muted">
           <svg
