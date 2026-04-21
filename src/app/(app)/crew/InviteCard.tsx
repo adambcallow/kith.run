@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 
 interface InviteCardProps {
@@ -7,13 +8,38 @@ interface InviteCardProps {
 }
 
 export function InviteCard({ userId }: InviteCardProps) {
-  function handleShare() {
+  const [copied, setCopied] = useState(false);
+
+  function getInviteUrl() {
+    return `${window.location.origin}/invite/${userId}`;
+  }
+
+  async function handleShare() {
+    const url = getInviteUrl();
+
+    // Try native share first — pass URL in both url and text fields
+    // to ensure it shows on all platforms
     if (navigator.share) {
-      navigator.share({
-        title: "Join me on Kith",
-        text: "Run with me on Kith!",
-        url: `${window.location.origin}/invite/${userId}`,
-      });
+      try {
+        await navigator.share({
+          title: "Join me on Kith",
+          text: `Run with me on Kith! ${url}`,
+          url,
+        });
+        return;
+      } catch {
+        // User cancelled or share failed — fall through to clipboard
+      }
+    }
+
+    // Fallback: copy to clipboard
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Last resort: prompt
+      window.prompt("Copy your invite link:", url);
     }
   }
 
@@ -23,10 +49,10 @@ export function InviteCard({ userId }: InviteCardProps) {
         Invite your crew
       </p>
       <p className="font-body text-xs text-kith-muted">
-        Share your link and run together.
+        Share your link — anyone who signs up through it is automatically added to your crew.
       </p>
       <Button variant="secondary" onClick={handleShare}>
-        Share invite link
+        {copied ? "Link copied!" : "Share invite link"}
       </Button>
     </div>
   );
