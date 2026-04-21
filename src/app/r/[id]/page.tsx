@@ -7,19 +7,7 @@ import {
 } from "@/lib/utils";
 import type { Profile } from "@/types/database";
 import type { Metadata } from "next";
-
-function formatRunDateTime(dateStr: string): string {
-  const date = new Date(dateStr);
-  const weekday = date.toLocaleDateString("en-GB", { weekday: "long" });
-  const day = date.getDate();
-  const month = date.toLocaleDateString("en-GB", { month: "long" });
-  const time = date.toLocaleTimeString("en-GB", {
-    hour: "numeric",
-    minute: "2-digit",
-    hour12: true,
-  });
-  return `${weekday} ${day} ${month} at ${time}`;
-}
+import { ClientTime } from "@/components/ui/ClientTime";
 
 export async function generateMetadata({
   params,
@@ -52,7 +40,7 @@ export async function generateMetadata({
     description: `${run.start_place} · ${formatDistance(run.distance_km)}${run.note ? ` — ${run.note.slice(0, 120)}` : ""}`,
     openGraph: {
       title: `${name}'s ${formatDistance(run.distance_km)} run — Kith`,
-      description: `${run.start_place} · ${formatRunDateTime(run.scheduled_at)}`,
+      description: `${run.start_place} · ${formatDistance(run.distance_km)}`,
       type: "website",
     },
   };
@@ -239,9 +227,7 @@ export default async function PublicRunPage({
                     strokeLinejoin="round"
                   />
                 </svg>
-                <span className="font-body text-sm text-[#2D2D2D]">
-                  {formatRunDateTime(run.scheduled_at)}
-                </span>
+                <ClientTime dateStr={run.scheduled_at} className="font-body text-sm text-[#2D2D2D]" />
               </div>
             </div>
 
