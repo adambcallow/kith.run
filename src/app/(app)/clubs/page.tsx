@@ -47,7 +47,7 @@ export default async function ClubsPage() {
           Run Clubs
         </h1>
         <p className="font-body text-sm text-kith-muted mt-1">
-          Find and join your local running community
+          Your clubs, your crew. Tag your runs and find fellow members on Kith.
         </p>
       </div>
 
@@ -77,8 +77,8 @@ export default async function ClubsPage() {
                 Suggest a club
               </p>
               <p className="font-body text-xs text-kith-muted mt-0.5 leading-relaxed">
-                Help us build the running community in your city.
-                Know a great run club? Let us know and we&apos;ll add it.
+                Part of a club that&apos;s not listed? Let us know and
+                we&apos;ll add it.
               </p>
             </div>
             <svg
@@ -190,7 +190,7 @@ export default async function ClubsPage() {
             Run clubs are coming to Kith
           </h2>
           <p className="font-body text-sm text-kith-muted max-w-[280px] leading-relaxed mb-6">
-            Know a great run club? Suggest it and help us build the community.
+            Part of a run club? Suggest it below and help us bring your club to the app.
           </p>
 
           {/* Primary CTA */}
