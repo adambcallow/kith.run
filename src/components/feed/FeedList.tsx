@@ -10,6 +10,7 @@ export interface FeedRun {
   participantCount: number;
   isJoined: boolean;
   reactions: Reaction[];
+  runClub?: { name: string; logo_url: string | null } | null;
 }
 
 export interface FeedSection {

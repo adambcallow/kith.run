@@ -88,6 +88,7 @@ export type Database = {
           expires_at: string | null;
           strava_activity_id: string | null;
           route_geojson: Record<string, unknown> | null;
+          run_club_id: string | null;
           status: "upcoming" | "active" | "completed";
           created_at: string;
         };
@@ -108,6 +109,7 @@ export type Database = {
           expires_at?: string | null;
           strava_activity_id?: string | null;
           route_geojson?: Record<string, unknown> | null;
+          run_club_id?: string | null;
           status?: "upcoming" | "active" | "completed";
           created_at?: string;
         };
@@ -128,6 +130,7 @@ export type Database = {
           expires_at?: string | null;
           strava_activity_id?: string | null;
           route_geojson?: Record<string, unknown> | null;
+          run_club_id?: string | null;
           status?: "upcoming" | "active" | "completed";
           created_at?: string;
         };

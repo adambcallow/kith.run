@@ -10,6 +10,7 @@ import {
   formatPaceRange,
   formatDistance,
   formatRelativeRunTime,
+  avatarFallbackColor,
 } from "@/lib/utils";
 import { RunDetailActions } from "./RunDetailActions";
 import { DeleteRunButton } from "./DeleteRunButton";
@@ -41,7 +42,7 @@ export default async function RunDetailPage({
 
   const { data: run } = await supabase
     .from("runs")
-    .select("*, profiles!creator_id(*)")
+    .select("*, profiles!creator_id(*), run_clubs!run_club_id(name, logo_url, instagram)")
     .eq("id", params.id)
     .single();
 
@@ -49,6 +50,12 @@ export default async function RunDetailPage({
 
   const creator = (run as Record<string, unknown>)
     .profiles as unknown as import("@/types/database").Profile;
+
+  const runClub = (run as Record<string, unknown>).run_clubs as {
+    name: string;
+    logo_url: string | null;
+    instagram: string | null;
+  } | null;
 
   const { data: participants } = await supabase
     .from("run_participants")
@@ -176,6 +183,56 @@ export default async function RunDetailPage({
             {run.visibility === "crew" ? "Crew" : "Public"}
           </Badge>
         </div>
+
+        {/* Run club */}
+        {runClub && (
+          <div className="rounded-card bg-kith-surface p-3 flex items-center gap-3">
+            {runClub.logo_url ? (
+              <img
+                src={runClub.logo_url}
+                alt={runClub.name}
+                className="w-8 h-8 rounded-full object-cover shrink-0"
+              />
+            ) : (
+              <div
+                className="w-8 h-8 rounded-full flex items-center justify-center font-display font-bold text-white text-xs shrink-0"
+                style={{ backgroundColor: avatarFallbackColor(runClub.name) }}
+              >
+                {runClub.name.charAt(0).toUpperCase()}
+              </div>
+            )}
+            <div className="flex-1 min-w-0">
+              <p className="font-display font-semibold text-sm text-kith-text truncate">
+                {runClub.name}
+              </p>
+              <p className="font-body text-xs text-kith-muted">Run club</p>
+            </div>
+            {runClub.instagram && (
+              <a
+                href={`https://instagram.com/${runClub.instagram.replace(/^@/, "")}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-pill bg-white text-kith-muted hover:text-kith-text transition-colors"
+                aria-label={`${runClub.name} on Instagram`}
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+                  <path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z" />
+                  <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+                </svg>
+              </a>
+            )}
+          </div>
+        )}
 
         {/* Run title */}
         {run.title && (

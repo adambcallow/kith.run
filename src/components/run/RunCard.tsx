@@ -9,6 +9,7 @@ import type { Run, Profile, Reaction } from "@/types/database";
 import Link from "next/link";
 import { clsx } from "clsx";
 import { memo } from "react";
+import { avatarFallbackColor } from "@/lib/utils";
 
 interface RunCardProps {
   run: Run;
@@ -17,6 +18,7 @@ interface RunCardProps {
   currentUserId?: string;
   isJoined: boolean;
   reactions?: Reaction[];
+  runClub?: { name: string; logo_url: string | null } | null;
 }
 
 export const RunCard = memo(function RunCard({
@@ -26,6 +28,7 @@ export const RunCard = memo(function RunCard({
   currentUserId,
   isJoined,
   reactions,
+  runClub,
 }: RunCardProps) {
   const isLive = run.is_live;
   const isCompleted = run.status === "completed";
@@ -66,6 +69,29 @@ export const RunCard = memo(function RunCard({
           <p className="font-display font-semibold text-base text-kith-text">
             {run.title}
           </p>
+        )}
+
+        {/* Run club badge */}
+        {runClub && (
+          <div className="inline-flex items-center gap-1 bg-kith-surface rounded-full px-2 py-0.5">
+            {runClub.logo_url ? (
+              <img
+                src={runClub.logo_url}
+                alt={runClub.name}
+                className="w-3.5 h-3.5 rounded-full object-cover"
+              />
+            ) : (
+              <div
+                className="w-3.5 h-3.5 rounded-full flex items-center justify-center text-[7px] font-bold text-white"
+                style={{ backgroundColor: avatarFallbackColor(runClub.name) }}
+              >
+                {runClub.name.charAt(0).toUpperCase()}
+              </div>
+            )}
+            <span className="text-xs font-body font-medium text-kith-text">
+              {runClub.name}
+            </span>
+          </div>
         )}
 
         {/* Location with pin icon */}

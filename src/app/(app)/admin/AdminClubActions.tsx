@@ -137,8 +137,16 @@ export function AdminClubActions({
 
       const cacheBustedUrl = `${publicUrl}?v=${Date.now()}`;
       setEditLogoUrl(cacheBustedUrl);
-    } catch {
-      setError("Logo upload failed. Please try again.");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      if (msg.includes("Bucket not found")) {
+        setError("Create a 'club-logos' public bucket in Supabase Storage.");
+      } else if (msg.includes("policy") || msg.includes("403") || msg.includes("not allowed")) {
+        setError("Storage policies not configured for club-logos bucket.");
+      } else {
+        setError("Logo upload failed. Please try again.");
+      }
+      console.error("Logo upload error:", msg);
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
@@ -12,7 +12,7 @@ import {
   IntervalBuilder,
   type IntervalSegment,
 } from "@/components/run/IntervalBuilder";
-import { formatPace, formatDistance } from "@/lib/utils";
+import { formatPace, formatDistance, avatarFallbackColor } from "@/lib/utils";
 import { ErrorAlert } from "@/components/ui/ErrorAlert";
 
 export default function NewRunPage() {
@@ -41,6 +41,48 @@ export default function NewRunPage() {
   const [intervals, setIntervals] = useState<IntervalSegment[]>([
     { distanceKm: 1, paceSeconds: 300 },
   ]);
+  const [isClubRun, setIsClubRun] = useState(false);
+  const [runClubId, setRunClubId] = useState<string | null>(null);
+  const [runClubFreeText, setRunClubFreeText] = useState("");
+  const [showFreeText, setShowFreeText] = useState(false);
+  const [joinedClubs, setJoinedClubs] = useState<
+    { id: string; name: string; logo_url: string | null }[]
+  >([]);
+  const [clubsLoading, setClubsLoading] = useState(false);
+
+  // Fetch joined clubs on mount
+  useEffect(() => {
+    async function fetchClubs() {
+      setClubsLoading(true);
+      const {
+        data: { user: authUser },
+      } = await supabase.auth.getUser();
+      if (!authUser) {
+        setClubsLoading(false);
+        return;
+      }
+      const { data } = await supabase
+        .from("run_club_members")
+        .select("club_id, run_clubs!club_id(id, name, logo_url)")
+        .eq("user_id", authUser.id);
+
+      if (data) {
+        const clubs = data
+          .map((row) => {
+            const club = (row as Record<string, unknown>).run_clubs as {
+              id: string;
+              name: string;
+              logo_url: string | null;
+            } | null;
+            return club;
+          })
+          .filter(Boolean) as { id: string; name: string; logo_url: string | null }[];
+        setJoinedClubs(clubs);
+      }
+      setClubsLoading(false);
+    }
+    fetchClubs();
+  }, [supabase]);
 
   function validate(): boolean {
     const errors: Record<string, string> = {};
@@ -94,6 +136,7 @@ export default function NewRunPage() {
       is_live: isLive,
       expires_at: expiresAt,
       ...(routeGeojson && { route_geojson: routeGeojson }),
+      ...(isClubRun && runClubId && { run_club_id: runClubId }),
     });
 
     if (insertError) {
@@ -418,6 +461,140 @@ export default function NewRunPage() {
           </div>
         </div>
 
+        {/* Run club toggle */}
+        <div
+          className={`rounded-card p-4 transition-all duration-300 cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-kith-orange/30 focus-visible:ring-offset-2 ${
+            isClubRun
+              ? "bg-kith-orange/10 border-2 border-kith-orange"
+              : "bg-kith-surface border-2 border-transparent"
+          }`}
+          onClick={() => {
+            setIsClubRun(!isClubRun);
+            if (isClubRun) {
+              setRunClubId(null);
+              setRunClubFreeText("");
+              setShowFreeText(false);
+            }
+          }}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              setIsClubRun(!isClubRun);
+              if (isClubRun) {
+                setRunClubId(null);
+                setRunClubFreeText("");
+                setShowFreeText(false);
+              }
+            }
+          }}
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex-1">
+              <span className="font-display font-semibold text-sm text-kith-text">
+                Run club run?
+              </span>
+              <p className="font-body text-xs text-kith-muted mt-0.5">
+                Associate this run with a club
+              </p>
+            </div>
+            <div
+              className={`relative w-14 h-8 rounded-full transition-colors duration-250 shrink-0 ${
+                isClubRun ? "bg-kith-orange" : "bg-kith-gray-light"
+              }`}
+            >
+              <div
+                className={`absolute top-1 left-1 w-6 h-6 rounded-full bg-white shadow-sm transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
+                  isClubRun ? "translate-x-6 scale-110" : "scale-100"
+                }`}
+                style={{ transitionProperty: "transform" }}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Club selector -- shown when toggle is on */}
+        {isClubRun && (
+          <div className="animate-fade-in-up space-y-3" onClick={(e) => e.stopPropagation()}>
+            {clubsLoading ? (
+              <div className="flex items-center gap-2 py-2">
+                <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-kith-orange border-t-transparent" />
+                <span className="font-body text-sm text-kith-muted">Loading your clubs...</span>
+              </div>
+            ) : joinedClubs.length > 0 ? (
+              <div className="flex flex-wrap gap-2">
+                {joinedClubs.map((club) => (
+                  <button
+                    key={club.id}
+                    type="button"
+                    onClick={() => {
+                      setRunClubId(runClubId === club.id ? null : club.id);
+                      setRunClubFreeText("");
+                      setShowFreeText(false);
+                    }}
+                    className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-pill text-sm font-body font-medium transition-all duration-200 active:scale-[0.97] ${
+                      runClubId === club.id
+                        ? "bg-kith-orange text-white shadow-sm"
+                        : "bg-kith-surface text-kith-text hover:bg-kith-gray-light/50"
+                    }`}
+                  >
+                    {club.logo_url ? (
+                      <img
+                        src={club.logo_url}
+                        alt={club.name}
+                        className="w-4 h-4 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div
+                        className="w-4 h-4 rounded-full flex items-center justify-center text-[8px] font-bold text-white"
+                        style={{ backgroundColor: runClubId === club.id ? "rgba(255,255,255,0.3)" : avatarFallbackColor(club.name) }}
+                      >
+                        {club.name.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                    {club.name}
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <p className="font-body text-sm text-kith-muted">
+                You haven&apos;t joined any clubs yet.
+              </p>
+            )}
+
+            {/* Free-text fallback */}
+            {!showFreeText ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setShowFreeText(true);
+                  setRunClubId(null);
+                }}
+                className="font-body text-xs text-kith-orange hover:underline"
+              >
+                Not listed?
+              </button>
+            ) : (
+              <div className="animate-fade-in-up">
+                <input
+                  type="text"
+                  placeholder="Type club name..."
+                  value={runClubFreeText}
+                  onChange={(e) => {
+                    setRunClubFreeText(e.target.value);
+                    setRunClubId(null);
+                  }}
+                  className="w-full rounded-input border border-kith-gray-light bg-white py-2.5 px-4 font-body text-sm text-kith-text placeholder:text-kith-muted focus:outline-none focus:ring-2 focus:ring-kith-orange/30 focus:border-kith-orange transition-all duration-200"
+                />
+                <p className="font-body text-[11px] text-kith-muted mt-1">
+                  Free-typed clubs won&apos;t be linked yet -- we&apos;ll add them soon
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Run preview card */}
         <p className="font-body text-xs text-kith-muted text-center">This is how your crew will see it</p>
         <div className="rounded-card bg-kith-surface border-2 border-dashed border-kith-gray-light p-4 space-y-3">
@@ -490,6 +667,18 @@ export default function NewRunPage() {
                 {visibility === "crew" ? "Crew only" : "Public"}
               </span>
             </div>
+            {isClubRun && (runClubId || runClubFreeText.trim()) && (
+              <div className="flex items-center gap-2">
+                <span className="text-sm" aria-hidden="true">
+                  {"\uD83C\uDFE2"}
+                </span>
+                <span className="font-body text-xs text-kith-muted">
+                  {runClubId
+                    ? joinedClubs.find((c) => c.id === runClubId)?.name ?? "Club"
+                    : runClubFreeText.trim()}
+                </span>
+              </div>
+            )}
           </div>
         </div>
 

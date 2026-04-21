@@ -38,7 +38,7 @@ export default async function FeedPage() {
   const creatorFilter = [user!.id, ...crewIds];
   const { data: runs } = await supabase
     .from("runs")
-    .select("id, creator_id, title, start_place, start_lat, start_lng, scheduled_at, distance_km, pace_min_target, pace_max_target, note, visibility, is_live, status, expires_at, strava_activity_id, route_geojson, created_at, profiles!creator_id(id, username, full_name, avatar_url)")
+    .select("id, creator_id, title, start_place, start_lat, start_lng, scheduled_at, distance_km, pace_min_target, pace_max_target, note, visibility, is_live, status, expires_at, strava_activity_id, route_geojson, run_club_id, created_at, profiles!creator_id(id, username, full_name, avatar_url), run_clubs!run_club_id(name, logo_url)")
     .or(`visibility.eq.public,creator_id.in.(${creatorFilter.join(",")})`)
     .or(
       `is_live.eq.true,status.eq.upcoming,and(status.eq.completed,scheduled_at.gte.${fortyEightHoursAgo})`
@@ -102,12 +102,15 @@ export default async function FeedPage() {
     const isJoined = participants.some((p) => p.user_id === user!.id);
     const reactions = reactionsByRun.get(run.id) ?? [];
 
+    const runClubData = (run as Record<string, unknown>).run_clubs as { name: string; logo_url: string | null } | null;
+
     return {
       run,
       creator: (run as Record<string, unknown>).profiles as unknown as import("@/types/database").Profile,
       participantCount: participants.length,
       isJoined,
       reactions,
+      runClub: runClubData ?? null,
     };
   });
 
