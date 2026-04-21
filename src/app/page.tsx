@@ -199,6 +199,16 @@ export default function LandingPage() {
               animation: fadeIn 1.2s ease-out 0.55s both;
             }
 
+            /* ---- Feature hints fade-in ---- */
+            .hints-enter {
+              animation: fadeIn 1s ease-out 1.4s both;
+            }
+
+            /* ---- Mobile secondary CTA fade-in ---- */
+            .mobile-cta-enter {
+              animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 1.6s both;
+            }
+
             /* ---- Desktop card hover ---- */
             @media (hover: hover) {
               .feature-card-hover {
@@ -225,6 +235,8 @@ export default function LandingPage() {
               .glow-pulse,
               .social-proof-enter,
               .headline-shimmer,
+              .hints-enter,
+              .mobile-cta-enter,
               .card-float-1, .card-float-2, .card-float-3,
               .card-float-4, .card-float-5, .card-float-6 {
                 animation: none !important;
@@ -306,23 +318,23 @@ export default function LandingPage() {
         </div>
 
         {/* Headline */}
-        <h1 className="enter enter-d2 font-display font-extrabold text-[2rem] sm:text-5xl md:text-6xl leading-[1.08] tracking-tight text-white mt-4 md:mt-5 headline-shimmer">
+        <h1 className="enter enter-d2 font-display font-extrabold text-[1.75rem] sm:text-5xl md:text-6xl leading-[1.08] tracking-tight text-white mt-3 md:mt-5 headline-shimmer">
           Run with your{" "}
           <span className="text-[#F95E2E] people-underline">people.</span>
         </h1>
 
         {/* Subline */}
-        <p className="enter enter-d3 font-body text-sm sm:text-base md:text-lg text-white/50 mt-3 md:mt-4 max-w-md leading-relaxed">
-          Plan a run. Rally your crew. Show up together.
+        <p className="enter enter-d3 font-body text-sm sm:text-base md:text-lg text-white/50 mt-2 md:mt-4 max-w-md leading-relaxed">
+          The app for runners who show up for each other.
         </p>
 
         {/* Social proof */}
-        <p className="social-proof-enter font-body text-[11px] sm:text-xs text-white/25 mt-2.5 tracking-wide">
-          Join runners who show up together
+        <p className="social-proof-enter font-body text-[11px] sm:text-xs text-white/25 mt-1.5 md:mt-2.5 tracking-wide">
+          Built for crews who run together
         </p>
 
         {/* CTAs */}
-        <div className="enter enter-d4 flex items-center gap-3 mt-5 md:mt-6">
+        <div className="enter enter-d4 flex items-center gap-3 mt-4 md:mt-6">
           <Link
             href="/signup"
             className="cta-glow inline-flex items-center justify-center font-body font-semibold text-sm sm:text-base text-white rounded-full px-8 py-3 min-h-[48px] sm:min-h-[50px] transition-all duration-200 hover:brightness-110 hover:-translate-y-[1px] active:scale-[0.97]"
@@ -343,33 +355,93 @@ export default function LandingPage() {
         </div>
 
         {/* ── Feature collage ── */}
-        <div className="mt-6 md:mt-8 w-full">
-          {/* Mobile: 2x2 grid with staggered scale-up entrance */}
-          <div className="grid grid-cols-2 gap-2.5 md:hidden max-w-[340px] mx-auto">
-            <div className="card-scale-enter card-d1">
-              <FeatureCard label="Rally your crew" featured>
-                <RunCardMini />
-              </FeatureCard>
+        <div className="mt-5 md:mt-10 w-full">
+          {/* Mobile: horizontally scrollable card strip */}
+          <div className="md:hidden -mx-4">
+            <div className="flex gap-3 overflow-x-auto scrollbar-hide px-4 pb-2 snap-x snap-mandatory">
+              <div className="min-w-[200px] max-w-[200px] snap-center shrink-0 card-scale-enter card-d1">
+                <FeatureCard label="Rally your crew" featured>
+                  <RunCardMini />
+                </FeatureCard>
+              </div>
+              <div className="min-w-[200px] max-w-[200px] snap-center shrink-0 card-scale-enter card-d2">
+                <FeatureCard label="Earn badges">
+                  <BadgesMini />
+                </FeatureCard>
+              </div>
+              <div className="min-w-[200px] max-w-[200px] snap-center shrink-0 card-scale-enter card-d3">
+                <FeatureCard label="Set your pace">
+                  <PaceMini />
+                </FeatureCard>
+              </div>
+              <div className="min-w-[200px] max-w-[200px] snap-center shrink-0 card-scale-enter card-d4">
+                <FeatureCard label="Build your crew">
+                  <CrewMini />
+                </FeatureCard>
+              </div>
+              <div className="min-w-[200px] max-w-[200px] snap-center shrink-0 card-scale-enter card-d5">
+                <FeatureCard label="Runs near you">
+                  <MapMini />
+                </FeatureCard>
+              </div>
+              <div className="min-w-[200px] max-w-[200px] snap-center shrink-0 card-scale-enter card-d6">
+                <FeatureCard label="Run clubs">
+                  <RunClubsMini />
+                </FeatureCard>
+              </div>
             </div>
-            <div className="card-scale-enter card-d2">
-              <FeatureCard label="Earn badges">
-                <BadgesMini />
-              </FeatureCard>
+
+            {/* Feature hints row */}
+            <div className="hints-enter flex items-center justify-center gap-4 mt-4 px-4">
+              <div className="flex items-center gap-1.5">
+                <svg className="w-3 h-3 text-white/25" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+                </svg>
+                <span className="font-body text-[10px] text-white/30">Track your pace</span>
+              </div>
+              <div className="w-px h-3 bg-white/10" />
+              <div className="flex items-center gap-1.5">
+                <svg className="w-3 h-3 text-white/25" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="8" r="7" />
+                  <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" />
+                </svg>
+                <span className="font-body text-[10px] text-white/30">Earn badges</span>
+              </div>
+              <div className="w-px h-3 bg-white/10" />
+              <div className="flex items-center gap-1.5">
+                <svg className="w-3 h-3 text-white/25" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
+                <span className="font-body text-[10px] text-white/30">Find clubs</span>
+              </div>
             </div>
-            <div className="card-scale-enter card-d3">
-              <FeatureCard label="Set your pace">
-                <PaceMini />
-              </FeatureCard>
-            </div>
-            <div className="card-scale-enter card-d4">
-              <FeatureCard label="Build your crew">
-                <CrewMini />
-              </FeatureCard>
+
+            {/* Mobile secondary CTA */}
+            <div className="mobile-cta-enter flex justify-center mt-4 px-4">
+              <Link
+                href="/signup"
+                className="cta-glow inline-flex items-center justify-center font-body font-semibold text-sm text-white rounded-full px-8 py-2.5 transition-all duration-200 hover:brightness-110 active:scale-[0.97]"
+                style={{
+                  backgroundImage:
+                    "linear-gradient(135deg, #F95E2E 0%, #FF7A45 50%, #F95E2E 100%)",
+                  backgroundSize: "200% 200%",
+                }}
+              >
+                Get started
+              </Link>
             </div>
           </div>
 
+          {/* Desktop: gradient separator line */}
+          <div className="hidden md:block mx-auto max-w-[780px] lg:max-w-[920px] mb-4" aria-hidden="true">
+            <div className="h-px w-full" style={{ background: "linear-gradient(90deg, transparent 0%, rgba(249,94,46,0.25) 50%, transparent 100%)" }} />
+          </div>
+
           {/* Desktop: 3x2 collage with transforms, float, and hover */}
-          <div className="hidden md:grid md:grid-cols-3 gap-3 lg:gap-4 max-w-[740px] lg:max-w-[860px] mx-auto py-1">
+          <div className="hidden md:grid md:grid-cols-3 gap-3 lg:gap-4 max-w-[780px] lg:max-w-[920px] mx-auto py-1">
             <div className="rotate-[-2deg] translate-y-[6px] card-float-1">
               <div className="card-enter card-d1">
                 <FeatureCard label="Set your pace">

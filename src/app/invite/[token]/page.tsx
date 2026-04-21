@@ -101,7 +101,7 @@ export default async function InvitePage({ params }: InvitePageProps) {
         </div>
 
         <p className="font-body text-xs text-white/30">
-          Free forever. No spam. Just runs.
+          Your crew is waiting.
         </p>
       </div>
     </div>
