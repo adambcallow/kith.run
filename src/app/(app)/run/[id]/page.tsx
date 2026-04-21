@@ -9,9 +9,9 @@ import {
   formatPace,
   formatPaceRange,
   formatDistance,
-  formatRelativeRunTime,
   avatarFallbackColor,
 } from "@/lib/utils";
+import { ClientTime } from "@/components/ui/ClientTime";
 import { RunDetailActions } from "./RunDetailActions";
 import { DeleteRunButton } from "./DeleteRunButton";
 import { CompleteRunButton } from "./CompleteRunButton";
@@ -96,7 +96,7 @@ export default async function RunDetailPage({
 
   const shareData = {
     title: `${creator.full_name ?? creator.username}'s ${formatDistance(run.distance_km)} run`,
-    text: `${run.start_place} \u00B7 ${formatRelativeRunTime(run.scheduled_at)}`,
+    text: `${run.start_place} \u00B7 ${formatDistance(run.distance_km)}`,
     url: `${process.env.NEXT_PUBLIC_APP_URL ?? "https://kith.run"}/run/${run.id}`,
   };
 
@@ -286,9 +286,7 @@ export default async function RunDetailPage({
               <span className="text-base shrink-0" aria-hidden="true">
                 {"\uD83D\uDD52"}
               </span>
-              <span className="font-body text-sm text-kith-text">
-                {formatRelativeRunTime(run.scheduled_at)}
-              </span>
+              <ClientTime dateStr={run.scheduled_at} className="font-body text-sm text-kith-text" />
             </div>
           </div>
 

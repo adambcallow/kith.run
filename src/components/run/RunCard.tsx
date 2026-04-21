@@ -4,7 +4,8 @@ import { Avatar } from "@/components/ui/Avatar";
 import { Badge } from "@/components/ui/Badge";
 import { JoinButton } from "./JoinButton";
 import { ReactionBar } from "./ReactionBar";
-import { formatPaceRange, formatDistance, formatRelativeRunTime, avatarFallbackColor } from "@/lib/utils";
+import { formatPaceRange, formatDistance, avatarFallbackColor } from "@/lib/utils";
+import { ClientTime } from "@/components/ui/ClientTime";
 import type { Run, Profile, Reaction } from "@/types/database";
 import Link from "next/link";
 import { clsx } from "clsx";
@@ -53,9 +54,7 @@ export const RunCard = memo(function RunCard({
             <p className="font-body font-medium text-sm text-kith-text truncate">
               {creator.full_name ?? creator.username}
             </p>
-            <p className="font-body text-xs text-kith-muted">
-              {formatRelativeRunTime(run.scheduled_at)}
-            </p>
+            <ClientTime dateStr={run.scheduled_at} className="font-body text-xs text-kith-muted" />
           </div>
           {isLive && <Badge variant="live">Going now</Badge>}
           {!isLive && run.visibility === "public" && (

@@ -37,7 +37,8 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname.startsWith("/reset-password");
   const isPublicPage =
     request.nextUrl.pathname === "/" ||
-    request.nextUrl.pathname.startsWith("/invite");
+    request.nextUrl.pathname.startsWith("/invite") ||
+    request.nextUrl.pathname.startsWith("/run/");
 
   if (!user && !isAuthPage && !isPublicPage) {
     const url = request.nextUrl.clone();
