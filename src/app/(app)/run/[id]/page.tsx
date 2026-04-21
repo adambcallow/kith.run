@@ -97,7 +97,7 @@ export default async function RunDetailPage({
   const shareData = {
     title: `${creator.full_name ?? creator.username}'s ${formatDistance(run.distance_km)} run`,
     text: `${run.start_place} \u00B7 ${formatDistance(run.distance_km)}`,
-    url: `${process.env.NEXT_PUBLIC_APP_URL ?? "https://kith.run"}/run/${run.id}`,
+    url: `${process.env.NEXT_PUBLIC_APP_URL ?? "https://www.kith.run"}/r/${run.id}`,
   };
 
   return (

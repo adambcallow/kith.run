@@ -38,7 +38,7 @@ export async function updateSession(request: NextRequest) {
   const isPublicPage =
     request.nextUrl.pathname === "/" ||
     request.nextUrl.pathname.startsWith("/invite") ||
-    request.nextUrl.pathname.startsWith("/run/");
+    request.nextUrl.pathname.startsWith("/r/");
 
   if (!user && !isAuthPage && !isPublicPage) {
     const url = request.nextUrl.clone();
